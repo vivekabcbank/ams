@@ -144,3 +144,25 @@ city_id = serializers.CharField(
     required=True,
     error_messages={"blank": "City can't be blank"}
 )
+
+company_name = serializers.CharField(
+    required=True,
+    allow_blank=False,
+    error_messages={
+        "blank": "company name can't be blank"
+    },
+    max_length=250
+)
+
+latitude = serializers.CharField(required=True)
+
+longitude = serializers.CharField(required=True)
+
+sitename = serializers.CharField(
+    required=True,
+    allow_blank=False,
+    error_messages={
+        "blank": "sitename can't be blank"
+    },
+    max_length=250
+)

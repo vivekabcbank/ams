@@ -165,4 +165,4 @@ cython_debug/
 # Ignore Docker volumes (which should not be committed to Git)
 docker-compose.yml
 Dockerfile
-/ams/db.sqlite3
+/db.sqlite3

@@ -19,7 +19,7 @@ admin.site.register(City, admin_class_name)
 
 admin_class_name = get_admin_class_name(Users)
 class admin_class_name(admin.ModelAdmin):
-    list_display = (encoded_id, "id","username","usertype","gender")
+    list_display = (encoded_id, "id","username","usertype")
 admin.site.register(Users, admin_class_name)
 
 admin_class_name = get_admin_class_name(UserType)

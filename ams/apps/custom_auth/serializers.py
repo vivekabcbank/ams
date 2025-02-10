@@ -1,5 +1,8 @@
 from .models import *
 from .serializerfields import *
+from django.db.models.functions import Concat
+from django.db.models import Q
+
 
 class CheckAdminUserIdentitySerializer(serializers.Serializer):
     userauth = serializers.CharField(required=True, allow_blank=False,
@@ -27,324 +30,35 @@ class CheckAdminUserIdentitySerializer(serializers.Serializer):
             raise serializers.ValidationError(errors)
         return super(CheckAdminUserIdentitySerializer, self).validate(self, data)
 
-
-class InsertUserTypeSerializer(serializers.ModelSerializer):
-    typename = serializers.CharField(
-        required=True,
-        allow_blank=False,
-        error_messages={
-            "blank": "Type name can't be blank"
-        }
-    )
-
-    description = serializers.CharField(
-        required=False,
-        allow_blank=True
-    )
-
-    class Meta:
-        model = UserType
-        fields = ('typename', 'description')
+class UserLoginSerializer(serializers.Serializer):
+    username = serializers.CharField(required=True,
+                                     max_length=250,
+                                     error_messages={'blank': "Email or phone number can't be blank"})
+    password = serializers.CharField(required=True,
+                                     max_length=250,
+                                     error_messages={'blank': "Password can't be blank"})
 
     @classmethod
     def validate(self, data):
         errors = {}
-        typename = data.get("typename", "")
+        username = data.get('username')
 
-        if is_not_Empty(typename):
-            if UserType.objects.filter(typename=typename).exists():
-                errors["typename"] = "Type name already exists"
-        else:
-            errors["typename"] = "Type name is required"
-
-        if errors:
-            raise serializers.ValidationError(errors)
-        return super(InsertUserTypeSerializer, self).validate(self, data)
-
-
-class InsertCountrySerializer(serializers.ModelSerializer):
-    countryname = serializers.CharField(
-        required=True,
-        allow_blank=False,
-        error_messages={
-            "blank": "Type name can't be blank"
-        }
-    )
-
-    sortname = serializers.CharField(
-        required=True,
-        allow_blank=False,
-        error_messages={
-            "blank": "Type name can't be blank"
-        }
-    )
-
-    countrycode = serializers.CharField(
-        required=True,
-        allow_blank=False,
-        error_messages={
-            "blank": "Type name can't be blank"
-        }
-    )
-
-    class Meta:
-        model = Country
-        fields = ('countryname', 'sortname', "countrycode")
-
-    @classmethod
-    def validate(self, data):
-        errors = {}
-        countryname = data.get("countryname", "")
-        sortname = data.get("sortname", "")
-        countrycode = data.get("countrycode", "")
-
-        if Country.objects.filter(countryname=countryname,
-                                  sortname=sortname,
-                                  countrycode=countrycode).exists():
-            errors["typename"] = "Country name already exists"
+        if not Users.objects.annotate(
+            mobile=Concat('callingcode', 'phone')
+        ).filter(
+            Q(username__exact=username) |
+            Q(email__iexact=username) |
+            Q(mobile__exact=username),
+            Q(isdeleted=False),
+        ).exists():
+            errors['username'] = "This account doesn't exist"
 
         if errors:
             raise serializers.ValidationError(errors)
+        return super(UserLoginSerializer, self).validate(self, data)
 
-        return super(InsertCountrySerializer, self).validate(self, data)
-
-
-class InsertStateSerializer(serializers.ModelSerializer):
-    countryid = serializers.CharField(
-        required=True,
-        allow_blank=False,
-        error_messages={
-            "blank": "Type name can't be blank"
-        }
-    )
-
-    statename = serializers.CharField(
-        required=True,
-        allow_blank=False,
-        error_messages={
-            "blank": "Type name can't be blank"
-        }
-    )
-
-    class Meta:
-        model = State
-        fields = ('countryid', 'statename')
-
-    @classmethod
-    def validate(self, data):
-        errors = {}
-        countryid = data.get("countryid", "")
-
-        try:
-            countryid = int(decode_str(countryid))
-            data["countryid"] = countryid
-            if not Country.objects.filter(id=countryid,
-                                          isdeleted=False
-                                          ).exists():
-                errors["countryid"] = "Country Identity doesn't valid."
-        except Exception as e:
-            errors["countryid"] = "Country Identity doesn't valid."
-        if errors:
-            raise serializers.ValidationError(errors)
-
-        return super(InsertStateSerializer, self).validate(self, data)
-
-
-class InsertCitySerializer(serializers.ModelSerializer):
-    stateid = serializers.CharField(
-        required=True,
-        allow_blank=False,
-        error_messages={
-            "blank": "Type name can't be blank"
-        }
-    )
-
-    cityname = serializers.CharField(
-        required=True,
-        allow_blank=False,
-        error_messages={
-            "blank": "Type name can't be blank"
-        }
-    )
-
-    class Meta:
-        model = City
-        fields = ('stateid', 'cityname')
-
-    @classmethod
-    def validate(self, data):
-        errors = {}
-        stateid = data.get("stateid", "")
-
-        try:
-            stateid = int(decode_str(stateid))
-            data["stateid"] = stateid
-            if not State.objects.filter(id=stateid,
-                                        isdeleted=False
-                                        ).exists():
-                errors["stateid"] = "State Identity doesn't valid."
-        except Exception as e:
-            errors["stateid"] = "State Identity doesn't valid."
-        if errors:
-            raise serializers.ValidationError(errors)
-
-        return super(InsertCitySerializer, self).validate(self, data)
-
-
-class CountrySerializer(serializers.ModelSerializer):
-    encoded_id = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Country
-        fields = ("id", "encoded_id", "countryname", "sortname", 'countrycode')
-
-    def get_encoded_id(self, obj):
-        return encode_str(obj.id)
-
-
-class StateSerializer(serializers.ModelSerializer):
-    encoded_id = serializers.SerializerMethodField()
-    encoded_country_id = serializers.SerializerMethodField()
-
-    class Meta:
-        model = State
-        fields = ("id", "encoded_id", "encoded_country_id", "statename", 'countryid')
-
-    def get_encoded_id(self, obj):
-        return encode_str(obj.id)
-
-    def get_encoded_country_id(self, obj):
-        return encode_str(obj.countryid_id)
-
-
-class CitySerializer(serializers.ModelSerializer):
-    encoded_id = serializers.SerializerMethodField()
-    encoded_stateid_id = serializers.SerializerMethodField()
-
-    class Meta:
-        model = City
-        fields = ("id", "encoded_id", "encoded_stateid_id", "cityname", 'stateid_id')
-
-    def get_encoded_id(self, obj):
-        return encode_str(obj.id)
-
-    def get_encoded_stateid_id(self, obj):
-        return encode_str(obj.stateid_id)
-
-
-class UserTypeSerializer(serializers.ModelSerializer):
-    encoded_id = serializers.SerializerMethodField()
-
-    class Meta:
-        model = UserType
-        fields = ("id", "encoded_id", "typename", 'description')
-
-    def get_encoded_id(self, obj):
-        return encode_str(obj.id)
-
-
-class GetCityByStateSerializer(serializers.Serializer):
-    city_id = serializers.CharField(required=False, help_text="Provide City Id")
-    state_id = serializers.CharField(required=False, help_text="Provide State Id")
-
-    @classmethod
-    def validate(self, data):
-        errors = {}
-        city_id = data.get("city_id")
-        state_id = data.get("state_id")
-
-        if city_id:
-            try:
-                city_id = int(decode_str(city_id))
-                data["city_id"] = city_id
-                city = City.objects.filter(id=city_id,
-                                           isdeleted=False)
-                if not city.exists():
-                    errors['city_id'] = "Invalid city id"
-            except Exception as e:
-                errors['city_id'] = "Invalid city id"
-
-        if state_id:
-            try:
-                state_id = int(decode_str(state_id))
-                data["state_id"] = state_id
-                state = State.objects.filter(id=state_id,
-                                             isdeleted=False)
-                if not state.exists():
-                    errors['state_id'] = "Invalid state id"
-            except Exception as e:
-                errors['state_id'] = "Invalid state id"
-
-        if errors:
-            raise serializers.ValidationError(errors)
-
-        return super(GetCityByStateSerializer, self).validate(self, data)
-
-
-class GetStateByCountrySerializer(serializers.Serializer):
-    country_id = serializers.CharField(required=False, help_text="Provide Country Id")
-    state_id = serializers.CharField(required=False, help_text="Provide State Id")
-
-    @classmethod
-    def validate(self, data):
-        errors = {}
-        country_id = data.get("country_id")
-        state_id = data.get("state_id")
-
-        if country_id:
-            try:
-                country_id = int(decode_str(country_id))
-                data["country_id"] = country_id
-                country = Country.objects.filter(id=country_id,
-                                                 isdeleted=False)
-                if not country.exists():
-                    errors['country_id'] = "Invalid country id"
-            except Exception as e:
-                errors['country_id'] = "Invalid country id"
-
-        if state_id:
-            try:
-                state_id = int(decode_str(state_id))
-                data["state_id"] = state_id
-                state = State.objects.filter(id=state_id,
-                                             isdeleted=False)
-                if not state.exists():
-                    errors['state_id'] = "Invalid state id"
-            except Exception as e:
-                errors['state_id'] = "Invalid state id"
-
-        if errors:
-            raise serializers.ValidationError(errors)
-
-        return super(GetStateByCountrySerializer, self).validate(self, data)
-
-
-class GetCountrySerializer(serializers.Serializer):
-    country_id = serializers.CharField(required=False, help_text="Provide Country Id")
-
-    @classmethod
-    def validate(self, data):
-        errors = {}
-        country_id = data.get("country_id")
-
-        if country_id:
-            try:
-                country_id = int(decode_str(country_id))
-                data["country_id"] = country_id
-                country = Country.objects.filter(id=country_id,
-                                                 isdeleted=False)
-                if not country.exists():
-                    errors['country_id'] = "Invalid country id"
-            except Exception as e:
-                errors['country_id'] = "Invalid country id"
-
-        if errors:
-            raise serializers.ValidationError(errors)
-
-        return super(GetCountrySerializer, self).validate(self, data)
-
-
-class UserDetailsSerializers(serializers.Serializer):
+class ValidateUserDetailsSerializers(serializers.Serializer):
+    company_name = company_name
     first_name = first_name
     last_name = last_name
     email = email
@@ -366,6 +80,7 @@ class UserDetailsSerializers(serializers.Serializer):
                                      max_length=30,
                                      error_messages={'blank': "Password can't be blank"},
                                      help_text="Provide Your Password")
+
     @classmethod
     def validate(self, data):
         errors = {}
@@ -413,54 +128,76 @@ class UserDetailsSerializers(serializers.Serializer):
         if errors:
             raise serializers.ValidationError(errors)
 
-        return super(UserDetailsSerializers, self).validate(self, data)
+        return super(ValidateUserDetailsSerializers, self).validate(self, data)
 
-
-class CreateUserSerializer(serializers.ModelSerializer):
+class UserDetailsSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()
+    company_name = company_name
     first_name = first_name
     last_name = last_name
     email = email
     username = username
-    usertype_id = usertype_id
+
     gender = gender
     dob = dob
     callingcode = callingcode
     phone = phone
     address = address
     pincode = pincode
+    country_id = serializers.SerializerMethodField()
+    state_id = serializers.SerializerMethodField()
+    city_id = serializers.SerializerMethodField()
+    usertype_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Users
+        fields = ("id",'first_name', 'last_name', 'email', 'username', 'usertype_id', 'gender', 'dob', 'callingcode', 'phone',
+            'address', 'pincode', 'country_id', 'state_id', 'city_id',"company_name")
+
+    def get_id(self, obj):
+        return encode_str(obj.id)
+
+    def get_country_id(self, obj):
+        return encode_str(obj.country_id)
+
+    def get_usertype_id(self, obj):
+        return encode_str(obj.usertype_id)
+
+    def get_state_id(self, obj):
+        return encode_str(obj.state_id)
+
+    def get_city_id(self, obj):
+        return encode_str(obj.city_id)
+
+class CreateUserSerializer(serializers.ModelSerializer):
+    company_name = company_name
+    first_name = first_name
+    last_name = last_name
+    email = email
+    username = username
+    gender = gender
+    dob = dob
+    callingcode = callingcode
+    phone = phone
+    address = address
+    pincode = pincode
+
+    usertype_id = usertype_id
     country_id = country_id
     state_id = state_id
     city_id = city_id
 
-    encoded_usertype_id = serializers.SerializerMethodField()
-    encoded_country_id = serializers.SerializerMethodField()
-    encoded_state_id = serializers.SerializerMethodField()
-    encoded_city_id = serializers.SerializerMethodField()
-
     class Meta:
         model = Users
         fields = (
-        'first_name', 'last_name', 'email', 'username', 'usertype_id', 'gender', 'dob', 'callingcode', 'phone',
-        'address', 'pincode', 'country_id', 'state_id', 'city_id', "encoded_usertype_id", "encoded_country_id",
-        "encoded_state_id", "encoded_city_id")
-
-    def get_encoded_usertype_id(self, obj):
-        return encode_str(obj.usertype_id)
-
-    def get_encoded_country_id(self, obj):
-        return encode_str(obj.country_id)
-
-    def get_encoded_state_id(self, obj):
-        return encode_str(obj.state_id)
-
-    def get_encoded_city_id(self, obj):
-        return encode_str(obj.city_id)
+            'first_name', 'last_name', 'email', 'username', 'gender', 'dob', 'callingcode', 'phone',
+            'address', 'pincode',"usertype_id", "country_id", "state_id","city_id","company_name")
 
     @classmethod
     def validate(self, data):
         first_name = data.get('first_name')
         last_name = data.get('last_name')
 
-        data['username'] = set_username(first_name, last_name)
+        data['username'] = set_username(first_name,last_name)
 
         return data

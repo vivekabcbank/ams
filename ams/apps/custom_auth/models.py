@@ -134,6 +134,7 @@ class Site(models.Model):
 
 
 class Users(AbstractUser):
+    company_name = models.CharField(default='', max_length=250)
     usertype = models.ForeignKey(
         UserType,
         related_name="users",
@@ -212,7 +213,6 @@ class Users(AbstractUser):
         blank=True,
         null=True
     )
-
     isdeleted = models.BooleanField(default=False)
     createddate = models.DateTimeField(default=utils.timezone.now, blank=True)
     updateddate = models.DateTimeField(blank=True, null=True)

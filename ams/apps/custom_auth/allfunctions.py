@@ -136,3 +136,13 @@ def get_weekdays(day=None):
     else:
         d1 = days
     return d1
+
+def check_password(hashed_password, user_password):
+    try:
+        password, salt = hashed_password.split(':')
+        return password == hashlib.sha256(
+                salt.encode() + user_password.encode()
+            ).hexdigest()
+    except Exception as e:
+        print(e)
+        return False

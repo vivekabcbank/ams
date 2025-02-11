@@ -17,7 +17,7 @@ class UserType(models.Model):
     class Meta:
         db_table = 'usertype'
         verbose_name = 'Usertype'
-        verbose_name_plural = 'Usertypes'
+        verbose_name_plural = 'Usertype'
 
     def __str__(self):
         return f"{self.typename}"
@@ -34,7 +34,7 @@ class Country(models.Model):
     class Meta:
         db_table = 'country'
         verbose_name = 'Country'
-        verbose_name_plural = 'Contries'
+        verbose_name_plural = 'Country'
 
     def __str__(self):
         return f"{self.countryname}"
@@ -54,7 +54,7 @@ class State(models.Model):
     class Meta:
         db_table = 'state'
         verbose_name = 'State'
-        verbose_name_plural = 'States'
+        verbose_name_plural = 'State'
 
     def __str__(self):
         return f"{self.statename}"
@@ -74,7 +74,7 @@ class City(models.Model):
     class Meta:
         db_table = 'city'
         verbose_name = 'City'
-        verbose_name_plural = 'Cities'
+        verbose_name_plural = 'City'
 
     def __str__(self):
         return f"{self.cityname}"
@@ -127,7 +127,7 @@ class Site(models.Model):
     class Meta:
         db_table = 'site'
         verbose_name = 'Site'
-        verbose_name_plural = 'Sites'
+        verbose_name_plural = 'Site'
 
     def __str__(self):
         return f"{self.sitename}"
@@ -220,7 +220,7 @@ class Users(AbstractUser):
     class Meta:
         db_table = 'auth_user'
         verbose_name = 'User'
-        verbose_name_plural = 'Users'
+        verbose_name_plural = 'User'
 
     def get_name(self):
         get_first_name = self.first_name
@@ -265,7 +265,7 @@ class Employee(models.Model):
     class Meta:
         db_table = 'employee'
         verbose_name = 'Employee'
-        verbose_name_plural = 'employees'
+        verbose_name_plural = 'Employee'
 
     def __str__(self):
         return f"{self.user.username}"
@@ -303,7 +303,7 @@ class Attendance(models.Model):
     class Meta:
         db_table = 'attendance'
         verbose_name = 'Attendance'
-        verbose_name_plural = 'Attendances'
+        verbose_name_plural = 'Attendance'
 
     def __str__(self):
         return f"{self.user.username}"
@@ -333,7 +333,7 @@ class Leave(models.Model):
     class Meta:
         db_table = 'leave'
         verbose_name = 'Leave'
-        verbose_name_plural = 'Leaves'
+        verbose_name_plural = 'Leave'
 
     def __str__(self):
         return f"{self.user.username}"

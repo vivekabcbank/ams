@@ -24,8 +24,7 @@ SECRET_KEY = 'django-insecure-491rni3mumgwh#k2_-&0w+t^_^_@hu4f(^$d1i$tubsuv9!0x1
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-ALLOWED_HOSTS = [".localhost", ".127.0.0.1","190a-114-143-222-190.ngrok-free.app"]
+ALLOWED_HOSTS = [".localhost", ".127.0.0.1","9385-114-143-222-190.ngrok-free.app"]
 
 
 # Application definition
@@ -51,7 +50,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'ams.apps.custom_auth.authsetup.MiddlewarePrintRequest'
+    # 'ams.apps.custom_auth.authsetup.MiddlewarePrintRequest'
 ]
 
 ROOT_URLCONF = 'ams.urls'
@@ -142,3 +141,7 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
     ),
 }
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://9385-114-143-222-190.ngrok-free.app',
+]

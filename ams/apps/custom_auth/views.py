@@ -70,6 +70,7 @@ class UserSigninView(GenericAPIView):
             if user:
                 response = {
                     "result": UserDetailsSerializer(user).data,
+                    "token":get_authentication_token(user.id),
                     "message": "Logged in successfully",
                     'status': HTTP_200_OK
                 }

@@ -16,10 +16,12 @@ class CheckAdminUserIdentitySerializer(serializers.Serializer):
             try:
                 userauth = int(decode_str(userauth))
                 data["userauth"] = userauth
-                if not Users.objects.filter(id=userauth,
-                                            isdeleted=False,
-                                            usertype_id=User_Type_id.ADMIN.value,
-                                            ).exists():
+                if not Users.objects.filter(
+                        Q(usertype_id=User_Type_id.ADMIN.value) |
+                        Q(is_superuser=True),
+                        Q(id=userauth),
+                        Q(isdeleted=False)
+                ).exists():
                     errors["userauth"] = "Admin Identity doesn't valid."
             except Exception as e:
                 errors["userauth"] = "Admin Identity doesn't valid."
@@ -42,7 +44,6 @@ class UserLoginSerializer(serializers.Serializer):
     def validate(self, data):
         errors = {}
         username = data.get('username')
-
         if not Users.objects.annotate(
             mobile=Concat('callingcode', 'phone')
         ).filter(

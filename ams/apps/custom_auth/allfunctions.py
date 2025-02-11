@@ -105,8 +105,6 @@ def get_authentication_token(userid):
     return token_key
 
 def set_username(first_name=None, last_name=None, check=0):
-    # breakpoint
-    # import pdb;pdb.set_trace()
     name = ""
     now_timestamp 	= datetime.datetime.now().timestamp()
     if first_name != None or first_name != "":

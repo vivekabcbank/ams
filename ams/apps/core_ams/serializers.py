@@ -221,7 +221,7 @@ class InsertCountrySerializer(serializers.ModelSerializer):
 
 
 class InsertStateSerializer(serializers.ModelSerializer):
-    countryid = serializers.CharField(
+    countryid_id = serializers.CharField(
         required=True,
         allow_blank=False,
         error_messages={
@@ -239,22 +239,32 @@ class InsertStateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = State
-        fields = ('countryid', 'statename')
+        fields = ('countryid_id', 'statename')
 
     @classmethod
     def validate(self, data):
         errors = {}
-        countryid = data.get("countryid", "")
+        countryid_id = data.get("countryid_id", "")
+        statename = data.get("statename", "")
 
         try:
-            countryid = int(decode_str(countryid))
-            data["countryid"] = countryid
-            if not Country.objects.filter(id=countryid,
+            countryid_id = int(decode_str(countryid_id))
+            data["countryid_id"] = countryid_id
+            if not Country.objects.filter(id=countryid_id,
                                           isdeleted=False
                                           ).exists():
-                errors["countryid"] = "Country Identity doesn't valid."
+                errors["countryid_id"] = "Country Identity doesn't valid."
         except Exception as e:
-            errors["countryid"] = "Country Identity doesn't valid."
+            errors["countryid_id"] = "Country Identity doesn't valid."
+
+        try:
+            if State.objects.filter(statename=statename,
+                                          isdeleted=False
+                                          ).exists():
+                errors["statename"] = "State name already exists"
+        except Exception as e:
+            errors["statename"] = "State name already exists"
+
         if errors:
             raise serializers.ValidationError(errors)
 
@@ -262,7 +272,7 @@ class InsertStateSerializer(serializers.ModelSerializer):
 
 
 class InsertCitySerializer(serializers.ModelSerializer):
-    stateid = serializers.CharField(
+    stateid_id = serializers.CharField(
         required=True,
         allow_blank=False,
         error_messages={
@@ -280,22 +290,32 @@ class InsertCitySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = City
-        fields = ('stateid', 'cityname')
+        fields = ('stateid_id', 'cityname')
 
     @classmethod
     def validate(self, data):
         errors = {}
-        stateid = data.get("stateid", "")
+        stateid_id = data.get("stateid_id", "")
+        cityname = data.get("cityname", "")
 
         try:
-            stateid = int(decode_str(stateid))
-            data["stateid"] = stateid
-            if not State.objects.filter(id=stateid,
+            stateid_id = int(decode_str(stateid_id))
+            data["stateid_id"] = stateid_id
+            if not State.objects.filter(id=stateid_id,
                                         isdeleted=False
                                         ).exists():
-                errors["stateid"] = "State Identity doesn't valid."
+                errors["stateid_id"] = "State Identity doesn't valid."
         except Exception as e:
-            errors["stateid"] = "State Identity doesn't valid."
+            errors["stateid_id"] = "State Identity doesn't valid."
+
+        try:
+            if City.objects.filter(cityname=cityname,
+                                          isdeleted=False
+                                          ).exists():
+                errors["cityname"] = "City name already exists"
+        except Exception as e:
+            errors["cityname"] = "City name already exists"
+
         if errors:
             raise serializers.ValidationError(errors)
 

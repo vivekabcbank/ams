@@ -80,11 +80,7 @@ class InsertUserTypeView(GenericAPIView):
             posted_data = other_data.validated_data
             user_type_serializer = InsertUserTypeSerializer(data=posted_data)
             if user_type_serializer.is_valid():
-                usertype = user_type_serializer.save()
-                result = {
-                    "id": encode_str(usertype.id),
-                }
-                response['result'] = result
+                user_type_serializer.save()
                 response['status'] = HTTP_200_OK
                 response["message"] = "User type added successfully"
             else:
@@ -115,7 +111,7 @@ class InsertCountryView(GenericAPIView):
         is_other_data_valid = other_data.is_valid()
 
         if is_authorization_valid and is_other_data_valid:
-            posted_data = other_data.validated_data
+            other_data.save()
             response['status'] = HTTP_200_OK
             response["message"] = "Country created successfully"
         else:
@@ -140,7 +136,7 @@ class InsertStateView(GenericAPIView):
         is_other_data_valid = other_data.is_valid()
 
         if is_authorization_valid and is_other_data_valid:
-            posted_data = other_data.validated_data
+            other_data.save()
             response['status'] = HTTP_200_OK
             response["message"] = "State created successfully"
         else:
@@ -166,7 +162,7 @@ class InsertCityView(GenericAPIView):
         is_other_data_valid = other_data.is_valid()
 
         if is_authorization_valid and is_other_data_valid:
-            posted_data = other_data.validated_data
+            other_data.save()
             response['status'] = HTTP_200_OK
             response["message"] = "City created successfully"
         else:

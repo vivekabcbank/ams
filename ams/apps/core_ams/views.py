@@ -4,7 +4,91 @@ from ..custom_auth.serializers import *
 from .serializers import *
 from ..custom_auth.http_status_code import *
 from rest_framework.response import Response
-from django.conf import settings
+
+class GetEmployeeView(GenericAPIView):
+    response = {}
+
+    @classmethod
+    def get(cls, request):
+        response = {}
+
+        other_data = GetEmployeeSerializer(data=request.data)
+        is_other_data_valid = other_data.is_valid()
+
+        if is_other_data_valid:
+            posted_data = other_data.validated_data
+            site_info_id = posted_data.get("site_info_id")
+            result = Employee.objects.filter(site_info_id=site_info_id)
+            employee_serializer = EmployeeDetailsSerializer(result, many=True)
+            response['result'] = employee_serializer.data
+            response['status'] = HTTP_200_OK
+        else:
+            response['errors'] = get_json_errors(
+                other_data.errors
+            )
+            response['status'] = HTTP_204_NO_CONTENT
+
+        return Response(response)
+
+
+class GetSitesView(GenericAPIView):
+    response = {}
+
+    @classmethod
+    def get(cls, request):
+        response = {}
+
+        other_data = GetSitesSerializer(data=request.data)
+        is_other_data_valid = other_data.is_valid()
+
+        if is_other_data_valid:
+            posted_data = other_data.validated_data
+            admin_sites = posted_data.get("admin_sites")
+            employee_sites = posted_data.get("employee_sites")
+            if admin_sites:
+                result_serializer = SiteDetailsSerializer(admin_sites, many=True)
+            else:
+                result_serializer = SiteDetailsSerializer(employee_sites,)
+            response['sites'] = result_serializer.data
+            response['status'] = HTTP_200_OK
+        else:
+            response['errors'] = get_json_errors(
+                other_data.errors
+            )
+            response['status'] = HTTP_204_NO_CONTENT
+
+        return Response(response)
+
+class ApplyLeaveView(GenericAPIView):
+
+    @classmethod
+    def post(cls, request):
+        response = {}
+
+        other_data = ApplyLeaveSerializers(data=request.data)
+        is_other_data_valid = other_data.is_valid()
+
+        if is_other_data_valid:
+            posted_data = other_data.validated_data
+            leave_serializer = CreateLeaveSerializer(data=posted_data)
+            leave_serializer_is_valid = leave_serializer.is_valid()
+
+            if leave_serializer_is_valid:
+                leave_serializer.save()
+                response = {
+                    "message": "Leave added successfully",
+                    'status': HTTP_200_OK
+                }
+            else:
+                response['errors'] = get_json_errors(leave_serializer.errors)
+                response['status'] = HTTP_204_NO_CONTENT
+        else:
+            response['errors'] = get_json_errors(
+                other_data.errors
+            )
+            response['status'] = HTTP_204_NO_CONTENT
+
+        return Response(response)
 
 class InsertSiteView(GenericAPIView):
 
@@ -50,9 +134,11 @@ class MakeSuperviserView(GenericAPIView):
         if is_other_data_valid:
             posted_data = other_data.validated_data
             user = posted_data.get("user")
-            user.update(
-                usertype_id = User_Type_id.SUPERVISER.value,
-            )
+            password = posted_data.get("password")
+
+            user.password = hash_md5(password)
+            user.usertype_id = User_Type_id.SUPERVISER.value
+            user.save()
 
             response['status'] = HTTP_200_OK
             response["message"] = "User changed to superuser"
@@ -343,10 +429,6 @@ class GetCountry(GenericAPIView):
 
 
 class GetUserTypes(GenericAPIView):
-    authentication_classes = ()
-    permission_classes = ()
-
-    serializer_class = UserTypeSerializer
 
     @classmethod
     def get(self, request):

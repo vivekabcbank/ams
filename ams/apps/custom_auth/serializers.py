@@ -2,50 +2,41 @@ from .models import *
 from .serializerfields import *
 from django.db.models.functions import Concat
 from django.db.models import Q
-
+from .serializervalidators import *
 
 class CheckAdminUserIdentitySerializer(serializers.Serializer):
-    userauth = serializers.CharField(required=True, allow_blank=False,
-                                     error_messages={'blank': 'Userauth can\'t be blank'})
+    userauth = userauth
 
     @classmethod
-    def validate(self, data):
+    def validate(cls, data):
         errors = {}
-        userauth = data.get("userauth", "")
-        if is_not_Empty(userauth):
-            try:
-                userauth = int(decode_str(userauth))
-                data["userauth"] = userauth
-                if not Users.objects.filter(
-                        Q(usertype_id=User_Type_id.ADMIN.value) |
-                        Q(is_superuser=True),
-                        Q(id=userauth),
-                        Q(isdeleted=False)
-                ).exists():
-                    errors["userauth"] = "Admin Identity doesn't valid."
-            except Exception as e:
+        data["userauth"] = userauth = decode_id(data.get("userauth"))
+        try:
+            if not Users.objects.filter(
+                    Q(usertype_id=User_Type_id.ADMIN.value) |
+                    Q(is_superuser=True),
+                    Q(id=userauth),
+                    Q(isdeleted=False)
+            ).exists():
                 errors["userauth"] = "Admin Identity doesn't valid."
-        else:
+        except Exception as e:
             errors["userauth"] = "Admin Identity doesn't valid."
 
         if errors:
             raise serializers.ValidationError(errors)
-        return super(CheckAdminUserIdentitySerializer, self).validate(self, data)
+        return super(CheckAdminUserIdentitySerializer, cls).validate(cls, data)
+
 
 class UserLoginSerializer(serializers.Serializer):
-    username = serializers.CharField(required=True,
-                                     max_length=250,
-                                     error_messages={'blank': "Email or phone number can't be blank"})
-    password = serializers.CharField(required=True,
-                                     max_length=250,
-                                     error_messages={'blank': "Password can't be blank"})
+    username = username_without_vald
+    password = password
 
     @classmethod
-    def validate(self, data):
+    def validate(cls, data):
         errors = {}
         username = data.get('username')
         if not Users.objects.annotate(
-            mobile=Concat('callingcode', 'phone')
+                mobile=Concat('callingcode', 'phone')
         ).filter(
             Q(username__exact=username) |
             Q(email__iexact=username) |
@@ -56,7 +47,8 @@ class UserLoginSerializer(serializers.Serializer):
 
         if errors:
             raise serializers.ValidationError(errors)
-        return super(UserLoginSerializer, self).validate(self, data)
+        return super(UserLoginSerializer, cls).validate(cls, data)
+
 
 class ValidateUserDetailsSerializers(serializers.Serializer):
     company_name = company_name
@@ -71,134 +63,102 @@ class ValidateUserDetailsSerializers(serializers.Serializer):
     phone = phone
     address = address
     pincode = pincode
-    country_id = country_id
-    state_id = state_id
-    city_id = city_id
-
-    password = serializers.CharField(required=True,
-                                     allow_blank=False,
-                                     min_length=6,
-                                     max_length=30,
-                                     error_messages={'blank': "Password can't be blank"},
-                                     help_text="Provide Your Password")
+    country = country
+    state = state
+    city = city
+    password = password
 
     @classmethod
     def validate(self, data):
-        errors = {}
-        usertype_id = data.get("usertype_id", 0)
-        country_id = data.get("country_id", 0)
-        state_id = data.get("state_id", 0)
-        city_id = data.get("city_id", 0)
+        data["usertype_id"] = decode_id(data.get("usertype_id"))
+        return data
 
-        try:
-            usertype_id = int(decode_str(usertype_id))
-            data["usertype_id"] = usertype_id
-            if not UserType.objects.filter(id=usertype_id,
-                                           isdeleted=False).exists():
-                errors['usertype_id'] = "Invalid usertype id"
-        except Exception as e:
-            errors['usertype_id'] = "Invalid usertype id"
-
-        try:
-            country_id = int(decode_str(country_id))
-            data["country_id"] = country_id
-            if not Country.objects.filter(id=country_id,
-                                          isdeleted=False).exists():
-                errors['country_id'] = "Invalid country id"
-        except Exception as e:
-            errors['country_id'] = "Invalid country id"
-
-        try:
-            state_id = int(decode_str(state_id))
-            data["state_id"] = state_id
-            if not State.objects.filter(id=state_id,
-                                        isdeleted=False).exists():
-                errors['state_id'] = "Invalid state id"
-        except Exception as e:
-            errors['state_id'] = "Invalid state id"
-
-        try:
-            city_id = int(decode_str(city_id))
-            data["city_id"] = city_id
-            if not City.objects.filter(id=city_id,
-                                       isdeleted=False).exists():
-                errors['city_id'] = "Invalid city id"
-        except Exception as e:
-            errors['city_id'] = "Invalid city id"
-
-        if errors:
-            raise serializers.ValidationError(errors)
-
-        return super(ValidateUserDetailsSerializers, self).validate(self, data)
 
 class UserDetailsSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
-    company_name = company_name
     first_name = first_name
     last_name = last_name
-    email = email
     username = username
-
     gender = gender
-    dob = dob
     callingcode = callingcode
     phone = phone
     address = address
     pincode = pincode
-    country_id = serializers.SerializerMethodField()
-    state_id = serializers.SerializerMethodField()
-    city_id = serializers.SerializerMethodField()
+    country = country
+    state = state
+    city = city
+    company_name = company_name
     usertype_id = serializers.SerializerMethodField()
+    dob = dob
+    email = email
 
     class Meta:
         model = Users
-        fields = ("id",'first_name', 'last_name', 'email', 'username', 'usertype_id', 'gender', 'dob', 'callingcode', 'phone',
-            'address', 'pincode', 'country_id', 'state_id', 'city_id',"company_name")
+        fields = (
+            "id", 'first_name', 'last_name', 'email', 'username', 'usertype_id', 'gender', 'dob', 'callingcode',
+            'phone', 'address', 'pincode', 'country', 'state', 'city', "company_name")
 
     def get_id(self, obj):
         return encode_str(obj.id)
 
-    def get_country_id(self, obj):
-        return encode_str(obj.country_id)
-
     def get_usertype_id(self, obj):
         return encode_str(obj.usertype_id)
 
-    def get_state_id(self, obj):
-        return encode_str(obj.state_id)
-
-    def get_city_id(self, obj):
-        return encode_str(obj.city_id)
 
 class CreateUserSerializer(serializers.ModelSerializer):
-    company_name = company_name
     first_name = first_name
     last_name = last_name
-    email = email
     username = username
     gender = gender
-    dob = dob
     callingcode = callingcode
     phone = phone
     address = address
     pincode = pincode
-
-    usertype_id = usertype_id
-    country_id = country_id
-    state_id = state_id
-    city_id = city_id
+    usertype_id = usertype_id_without_vald
+    country = country
+    state = state
+    city = city
+    company_name = company_name
+    email = email
+    dob = dob
 
     class Meta:
         model = Users
         fields = (
             'first_name', 'last_name', 'email', 'username', 'gender', 'dob', 'callingcode', 'phone',
-            'address', 'pincode',"usertype_id", "country_id", "state_id","city_id","company_name")
+            'address', 'pincode', "usertype_id", "country", "state", "city", "company_name")
 
     @classmethod
     def validate(self, data):
         first_name = data.get('first_name')
         last_name = data.get('last_name')
+        data['username'] = set_username(first_name, last_name)
+        return data
 
-        data['username'] = set_username(first_name,last_name)
 
+class ValidateEmployeeDetailsSerializers(serializers.Serializer):
+    company_name = company_name
+    first_name = first_name
+    last_name = last_name
+    email = email
+    username = username
+    gender = gender
+    dob = dob
+    callingcode = callingcode
+    phone = phone
+    address = address
+    pincode = pincode
+    country = country
+    state = state
+    city = city
+    usertype_id = usertype_id
+    site_info_id = site_info_id
+    joiningdate = joiningdate
+    min_wages = min_wages
+    qualification = qualification
+
+    @classmethod
+    def validate(self, data):
+        data["usertype_id"] = decode_id(data.get("usertype_id"))
+        data["site_info_id"] = decode_id(data.get("site_info_id"))
         return data

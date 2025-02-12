@@ -1,59 +1,84 @@
-from rest_framework import serializers
-from ..custom_auth.allfunctions import *
 from ..custom_auth.models import *
 from ..custom_auth.serializerfields import *
 
 
+class GetEmployeeSerializer(serializers.Serializer):
+    site_info_id = site_info_id
+
+    @classmethod
+    def validate(self, data):
+        data["site_info_id"] = decode_id(data.get("site_info_id"))
+        return data
+
+
+class ApplyLeaveSerializers(serializers.Serializer):
+    employee_id = employee_id
+    site_info_id = site_info_id
+    start_date = start_date
+    end_date = end_date
+    reason = reason
+
+    @classmethod
+    def validate(self, data):
+        errors = {}
+        data["employee_id"] = employee_id = decode_id(data.get("employee_id"))
+        data["site_info_id"] = site_info_id = decode_id(data.get("site_info_id"))
+        start_date = data.get("start_date")
+        end_date = data.get("end_date")
+
+        if start_date >= end_date:
+            errors['date mismatch'] = "End date shoule be grater than start date"
+
+        try:
+            if employee_id is not None and site_info_id is not None:
+                if not Employee.objects.filter(id=employee_id,
+                                               site_info_id=site_info_id,
+                                               isdeleted=False).exists():
+                    errors['mismatch_data'] = "employee_id, site not matched"
+        except Exception as e:
+            errors['mismatch_data'] = "employee_id, site not matchedee"
+
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        return super(ApplyLeaveSerializers, self).validate(self, data)
+
+
+class CreateLeaveSerializer(serializers.ModelSerializer):
+    employee_id = employee_id_without_vald
+    site_info_id = site_info_id_without_vald
+    start_date = start_date
+    end_date = end_date
+    reason = reason
+
+    class Meta:
+        model = Leave
+        fields = ('employee_id', 'site_info_id', 'start_date', 'end_date', 'reason')
+
+
 class ValidateSiteDetailsSerializers(serializers.Serializer):
+    owner_user_id = userauth
     sitename = sitename
     address = address
-    country_id = country_id
-    state_id = state_id
-    city_id = city_id
+    country = country
+    state = state
+    city = city
     latitude = latitude
     longitude = longitude
 
     @classmethod
     def validate(self, data):
         errors = {}
-        sitename = data.get("sitename", "")
-        country_id = data.get("country_id", 0)
-        state_id = data.get("state_id", 0)
-        city_id = data.get("city_id", 0)
+        sitename = data.get("sitename")
+        data["owner_user_id"] = owner_user_id = decode_id(data.get("owner_user_id"))
 
         try:
-            data["sitename"] = sitename
-            if Site.objects.filter(sitename__exact=sitename,isdeleted=False).exists():
+            if Site.objects.filter(sitename__exact=sitename,
+                                   owner_user_id=owner_user_id,
+                                   isdeleted=False).exists():
                 errors['sitename'] = "Site name already exists"
         except Exception as e:
             errors['sitename'] = "Site name already exists"
-
-        try:
-            country_id = int(decode_str(country_id))
-            data["country_id"] = country_id
-            if not Country.objects.filter(id=country_id,
-                                          isdeleted=False).exists():
-                errors['country_id'] = "Invalid country id"
-        except Exception as e:
-            errors['country_id'] = "Invalid country id"
-
-        try:
-            state_id = int(decode_str(state_id))
-            data["state_id"] = state_id
-            if not State.objects.filter(id=state_id,
-                                        isdeleted=False).exists():
-                errors['state_id'] = "Invalid state id"
-        except Exception as e:
-            errors['state_id'] = "Invalid state id"
-
-        try:
-            city_id = int(decode_str(city_id))
-            data["city_id"] = city_id
-            if not City.objects.filter(id=city_id,
-                                       isdeleted=False).exists():
-                errors['city_id'] = "Invalid city id"
-        except Exception as e:
-            errors['city_id'] = "Invalid city id"
 
         if errors:
             raise serializers.ValidationError(errors)
@@ -65,73 +90,90 @@ class SiteDetailsSerializer(serializers.ModelSerializer):
     id = serializers.SerializerMethodField()
     sitename = sitename
     address = address
-    country_id = serializers.SerializerMethodField()
-    state_id = serializers.SerializerMethodField()
-    city_id = serializers.SerializerMethodField()
+    country = country
+    state = state
+    city = city
     latitude = latitude
     longitude = longitude
+    owner_user_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Site
-        fields = ("id", 'sitename', 'address', 'country_id', 'state_id', 'city_id', 'latitude', 'longitude')
+        fields = ("id", 'sitename', 'address', 'country', 'state', 'city', 'latitude', 'longitude', "owner_user_id")
 
     def get_id(self, obj):
         return encode_str(obj.id)
 
-    def get_country_id(self, obj):
-        return encode_str(obj.country_id)
+    def get_owner_user_id(self, obj):
+        return encode_str(obj.owner_user_id)
 
-    def get_state_id(self, obj):
-        return encode_str(obj.state_id)
 
-    def get_city_id(self, obj):
-        return encode_str(obj.city_id)
+class GetSitesSerializer(serializers.Serializer):
+    owner_user_id = owner_user_id
+    usertype_id = usertype_id
+
+    @classmethod
+    def validate(self, data):
+        errors = {}
+        data["usertype_id"] = usertype_id = decode_id(data.get("usertype_id", ""))
+
+        try:
+            data["owner_user_id"] = owner_user_id = decode_id(data.get("owner_user_id"))
+            if usertype_id == User_Type_id.ADMIN.value:
+                user = Users.objects.filter(pk=owner_user_id, isdeleted=False).first()
+                data["admin_sites"] = Site.objects.filter(owner_user_id=owner_user_id,
+                                                          isdeleted=False)
+            else:
+                user = Employee.objects.filter(pk=owner_user_id).select_related('site_info').first()
+                data["employee_sites"] = user.site_info
+            if not user:
+                errors['owner_user_id'] = "Invalid user id"
+
+        except Exception as e:
+            errors['owner_user_id'] = "Invalid owner id"
+
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        return super(GetSitesSerializer, self).validate(self, data)
 
 
 class CreateSiteSerializer(serializers.ModelSerializer):
     sitename = sitename
     address = address
-    country_id = country_id
-    state_id = state_id
-    city_id = city_id
+    country = country
+    state = state
+    city = city
     latitude = latitude
     longitude = longitude
+    owner_user_id = owner_user_id
 
     class Meta:
         model = Site
         fields = (
-            'sitename', 'address', 'country_id', 'state_id', 'city_id', 'latitude', 'longitude')
+            'sitename', 'address', 'country', 'state', 'city', 'latitude', 'longitude', "owner_user_id")
 
 
 class MakeSuperviserSerializer(serializers.Serializer):
-    user_id = serializers.CharField(required=True, help_text="Provide City Id")
-    usertype_id = serializers.CharField(required=True, help_text="Provide State Id")
+    employee_id = employee_id
+    usertype_id = usertype_id
+    password = password
 
     @classmethod
     def validate(self, data):
         errors = {}
-        usertype_id = data.get("usertype_id", 0)
-        user_id = data.get("user_id", 0)
+        data["usertype_id"] = decode_id(data.get("usertype_id"))
+        data["employee_id"] = employee_id = decode_id(data.get("employee_id"))
 
         try:
-            user_id = int(decode_str(user_id))
-            data["user_id"] = user_id
-            user = Users.objects.filter(pk=user_id,
-                                        isdeleted=False)
+            employee = Employee.objects.filter(pk=employee_id,
+                                               isdeleted=False).first()
+
+            user = Users.objects.filter(pk=employee.user.id,
+                                        isdeleted=False).first()
             data["user"] = user
-            if not user.exists():
-                errors['user_id'] = "Invalid user id"
         except Exception as e:
-            errors['user_id'] = "Invalid user id"
-
-        try:
-            usertype_id = int(decode_str(usertype_id))
-            data["usertype_id"] = usertype_id
-            if not UserType.objects.filter(id=usertype_id,
-                                           isdeleted=False).exists():
-                errors['usertype_id'] = "Invalid usertype id"
-        except Exception as e:
-            errors['usertype_id'] = "Invalid usertype id"
+            errors['user_id'] = "Invalid employee id"
 
         if errors:
             raise serializers.ValidationError(errors)
@@ -139,19 +181,20 @@ class MakeSuperviserSerializer(serializers.Serializer):
         return super(MakeSuperviserSerializer, self).validate(self, data)
 
 
-class InsertUserTypeSerializer(serializers.ModelSerializer):
-    typename = serializers.CharField(
-        required=True,
-        allow_blank=False,
-        error_messages={
-            "blank": "Type name can't be blank"
-        }
-    )
+class UserTypeSerializer(serializers.ModelSerializer):
+    id = serializers.SerializerMethodField()
 
-    description = serializers.CharField(
-        required=False,
-        allow_blank=True
-    )
+    class Meta:
+        model = UserType
+        fields = ("id", "typename", 'description')
+
+    def get_id(self, obj):
+        return encode_str(obj.id)
+
+
+class InsertUserTypeSerializer(serializers.ModelSerializer):
+    typename = typename
+    description = description
 
     class Meta:
         model = UserType
@@ -160,17 +203,44 @@ class InsertUserTypeSerializer(serializers.ModelSerializer):
     @classmethod
     def validate(self, data):
         errors = {}
-        typename = data.get("typename", "")
-
-        if is_not_Empty(typename):
-            if UserType.objects.filter(typename=typename).exists():
-                errors["typename"] = "Type name already exists"
-        else:
-            errors["typename"] = "Type name is required"
-
+        typename = data.get("typename")
+        if UserType.objects.filter(typename=typename).exists():
+            errors["typename"] = "Type name already exists"
         if errors:
             raise serializers.ValidationError(errors)
         return super(InsertUserTypeSerializer, self).validate(self, data)
+
+
+class EmployeeDetailsSerializer(serializers.ModelSerializer):
+    joiningdate = joiningdate
+    min_wages = min_wages
+    qualification = qualification
+    is_on_leave = serializers.SerializerMethodField()
+    id = serializers.SerializerMethodField()
+    user_id = serializers.SerializerMethodField()
+    site_info_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Employee
+        fields = (
+            "id", 'user_id', 'site_info_id', 'joiningdate', 'min_wages', 'qualification', "is_on_leave")
+
+    def get_id(self, obj):
+        return encode_str(obj.id)
+
+    def get_user_id(self, obj):
+        return encode_str(obj.user_id)
+
+    def get_site_info_id(self, obj):
+        return encode_str(obj.site_info_id)
+
+    def get_is_on_leave(self, obj):
+        leave = Leave.objects.filter(employee_id=obj.id).first()
+        if leave and leave.start_date and leave.end_date:
+            today = datetime.date.today()
+            if today == leave.start_date or leave.start_date < today < leave.end_date:
+                return True
+        return False
 
 
 class InsertCountrySerializer(serializers.ModelSerializer):
@@ -259,8 +329,8 @@ class InsertStateSerializer(serializers.ModelSerializer):
 
         try:
             if State.objects.filter(statename=statename,
-                                          isdeleted=False
-                                          ).exists():
+                                    isdeleted=False
+                                    ).exists():
                 errors["statename"] = "State name already exists"
         except Exception as e:
             errors["statename"] = "State name already exists"
@@ -310,8 +380,8 @@ class InsertCitySerializer(serializers.ModelSerializer):
 
         try:
             if City.objects.filter(cityname=cityname,
-                                          isdeleted=False
-                                          ).exists():
+                                   isdeleted=False
+                                   ).exists():
                 errors["cityname"] = "City name already exists"
         except Exception as e:
             errors["cityname"] = "City name already exists"
@@ -361,17 +431,6 @@ class CitySerializer(serializers.ModelSerializer):
 
     def get_stateid_id(self, obj):
         return encode_str(obj.stateid_id)
-
-
-class UserTypeSerializer(serializers.ModelSerializer):
-    id = serializers.SerializerMethodField()
-
-    class Meta:
-        model = UserType
-        fields = ("id", "typename", 'description')
-
-    def get_id(self, obj):
-        return encode_str(obj.id)
 
 
 class GetCityByStateSerializer(serializers.Serializer):

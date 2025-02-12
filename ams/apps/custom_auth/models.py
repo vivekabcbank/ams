@@ -80,59 +80,6 @@ class City(models.Model):
         return f"{self.cityname}"
 
 
-class Site(models.Model):
-    sitename = models.CharField(max_length=200)
-    address = models.TextField(
-        default='',
-        blank=True,
-        null=True
-    )
-    country = models.ForeignKey(
-        Country,
-        related_name="sitecountry",
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True
-    )
-    state = models.ForeignKey(
-        State,
-        related_name="sitestate",
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True
-    )
-    city = models.ForeignKey(
-        City,
-        related_name="sitecity",
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True
-    )
-    latitude = models.CharField(
-        default='',
-        max_length=20,
-        blank=True,
-        null=True
-    )
-    longitude = models.CharField(
-        default='',
-        max_length=20,
-        blank=True,
-        null=True
-    )
-    isdeleted = models.BooleanField(default=False)
-    createddate = models.DateTimeField(default=utils.timezone.now, blank=True)
-    updateddate = models.DateTimeField(null=True)
-
-    class Meta:
-        db_table = 'site'
-        verbose_name = 'Site'
-        verbose_name_plural = 'Site'
-
-    def __str__(self):
-        return f"{self.sitename}"
-
-
 class Users(AbstractUser):
     company_name = models.CharField(default='', max_length=250)
     usertype = models.ForeignKey(
@@ -192,24 +139,21 @@ class Users(AbstractUser):
         blank=True,
         null=True
     )
-    country = models.ForeignKey(
-        Country,
-        related_name="country",
-        on_delete=models.CASCADE,
+    country = models.CharField(
+        default='',
+        max_length=50,
         blank=True,
         null=True
     )
-    state = models.ForeignKey(
-        State,
-        related_name="state",
-        on_delete=models.CASCADE,
+    state = models.CharField(
+        default='',
+        max_length=50,
         blank=True,
         null=True
     )
-    city = models.ForeignKey(
-        City,
-        related_name="city",
-        on_delete=models.CASCADE,
+    city = models.CharField(
+        default='',
+        max_length=50,
         blank=True,
         null=True
     )
@@ -242,8 +186,63 @@ class Users(AbstractUser):
         return f"{self.username}"
 
 
+class Site(models.Model):
+    owner_user = models.ForeignKey(
+        Users,
+        related_name="siteowner",
+        on_delete=models.CASCADE
+    )
+    sitename = models.CharField(max_length=200)
+    address = models.TextField(
+        default='',
+        blank=True,
+        null=True
+    )
+    country = models.CharField(
+        default='',
+        max_length=50,
+        blank=True,
+        null=True
+    )
+    state = models.CharField(
+        default='',
+        max_length=50,
+        blank=True,
+        null=True
+    )
+    city = models.CharField(
+        default='',
+        max_length=50,
+        blank=True,
+        null=True
+    )
+    latitude = models.CharField(
+        default='',
+        max_length=20,
+        blank=True,
+        null=True
+    )
+    longitude = models.CharField(
+        default='',
+        max_length=20,
+        blank=True,
+        null=True
+    )
+    isdeleted = models.BooleanField(default=False)
+    createddate = models.DateTimeField(default=utils.timezone.now, blank=True)
+    updateddate = models.DateTimeField(null=True)
+
+    class Meta:
+        db_table = 'site'
+        verbose_name = 'Site'
+        verbose_name_plural = 'Site'
+
+    def __str__(self):
+        return f"{self.sitename}"
+
+
 class Employee(models.Model):
-    user = models.ForeignKey(
+    user = models.OneToOneField(
         Users,
         related_name="employeeinformation",
         on_delete=models.CASCADE,
@@ -255,9 +254,10 @@ class Employee(models.Model):
         on_delete=models.CASCADE,
         null=True
     )
-    joiningdate = models.DateTimeField(null=True)
+    joiningdate = models.DateField(null=True)
     min_wages = models.FloatField(default=0.0)
     qualification = models.CharField(default='', max_length=250)
+    is_on_leave = models.BooleanField(default=False)
     isdeleted = models.BooleanField(default=False)
     createddate = models.DateTimeField(default=utils.timezone.now, blank=True)
     updateddate = models.DateTimeField(null=True)
@@ -272,8 +272,8 @@ class Employee(models.Model):
 
 
 class Attendance(models.Model):
-    user = models.ForeignKey(
-        Users,
+    employee = models.ForeignKey(
+        Employee,
         related_name="employeeattendance",
         on_delete=models.CASCADE,
         null=True
@@ -295,7 +295,7 @@ class Attendance(models.Model):
         null=True,
         blank=True
     )
-    date = models.DateTimeField(null=True)
+    date = models.DateField(null=True)
     isdeleted = models.BooleanField(default=False)
     createddate = models.DateTimeField(default=utils.timezone.now, blank=True)
     updateddate = models.DateTimeField(null=True)
@@ -310,8 +310,8 @@ class Attendance(models.Model):
 
 
 class Leave(models.Model):
-    user = models.ForeignKey(
-        Users,
+    employee = models.ForeignKey(
+        Employee,
         related_name="employeealeave",
         on_delete=models.CASCADE,
         null=True
@@ -323,8 +323,8 @@ class Leave(models.Model):
         null=True
     )
 
-    start_date = models.DateTimeField(null=True)
-    end_date = models.DateTimeField(null=True)
+    start_date = models.DateField(null=True)
+    end_date = models.DateField(null=True)
     reason = models.TextField(blank=True, null=True)
     isdeleted = models.BooleanField(default=False)
     createddate = models.DateTimeField(default=utils.timezone.now, blank=True)
@@ -336,8 +336,7 @@ class Leave(models.Model):
         verbose_name_plural = 'Leave'
 
     def __str__(self):
-        return f"{self.user.username}"
-
+        return f"{self.employee.id}"
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_auth_token(sender, instance=None, created=False, **kwargs):

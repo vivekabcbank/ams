@@ -24,7 +24,7 @@ SECRET_KEY = 'django-insecure-491rni3mumgwh#k2_-&0w+t^_^_@hu4f(^$d1i$tubsuv9!0x1
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-ALLOWED_HOSTS = [".localhost", ".127.0.0.1","9385-114-143-222-190.ngrok-free.app"]
+ALLOWED_HOSTS = [".localhost", ".127.0.0.1","a133-2401-4900-8fc8-e860-1c3e-f6fc-e8ad-bbaa.ngrok-free.app"]
 
 
 # Application definition
@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "ams.apps.custom_auth",
     "ams.apps.core_ams",
     'rest_framework',
+    "drf_yasg",
     'rest_framework.authtoken',
 ]
 
@@ -109,7 +110,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
+
 
 USE_I18N = True
 
@@ -143,5 +145,25 @@ REST_FRAMEWORK = {
 }
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://9385-114-143-222-190.ngrok-free.app',
+    'https://a133-2401-4900-8fc8-e860-1c3e-f6fc-e8ad-bbaa.ngrok-free.app',
 ]
+
+SWAGGER_SETTINGS = {
+    'SHOW_REQUEST_HEADERS': True,
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    },
+    'USE_SESSION_AUTH': False,
+    'JSON_EDITOR': True,
+    'SUPPORTED_SUBMIT_METHODS': [
+        'get',
+        'post',
+        'put',
+        'delete',
+        'patch'
+    ],
+}

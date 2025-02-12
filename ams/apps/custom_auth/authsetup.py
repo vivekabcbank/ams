@@ -23,7 +23,6 @@ class UserAuthentication(ModelBackend):
                 mobile=Concat('callingcode', 'phone')
             ).filter(
                 Q(username__exact=username) |
-                Q(email__iexact=username) |
                 Q(mobile__exact=username),
                 Q(isdeleted=False),
             ).last()

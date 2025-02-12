@@ -84,7 +84,7 @@ def get_json_errors(error_list_data):
     for key, error_list in field_errors:
         __field_errors[key] = error_list
 
-    return __field_errors;
+    return __field_errors
 
 
 def hash_md5(token):
@@ -144,3 +144,6 @@ def check_password(hashed_password, user_password):
     except Exception as e:
         print(e)
         return False
+
+def decode_id(id):
+    return int(decode_str(id))

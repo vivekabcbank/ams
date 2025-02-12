@@ -270,7 +270,6 @@ class Employee(models.Model):
     def __str__(self):
         return f"{self.user.username}"
 
-
 class Attendance(models.Model):
     employee = models.ForeignKey(
         Employee,
@@ -286,11 +285,12 @@ class Attendance(models.Model):
     )
 
     attendance = models.CharField(
-        max_length=1,
+        max_length=2,
         choices=(
             ('P', 'Present'),
             ('A', 'Absent'),
-            ('H', 'Half_day')
+            ('HD', 'Half_day'),
+            ('OT', 'Over_time')
         ),
         null=True,
         blank=True
@@ -306,7 +306,7 @@ class Attendance(models.Model):
         verbose_name_plural = 'Attendance'
 
     def __str__(self):
-        return f"{self.user.username}"
+        return f"{self.employee}"
 
 
 class Leave(models.Model):

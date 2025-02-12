@@ -33,6 +33,10 @@ urlpatterns = [
         'get-employee',
         GetEmployeeView.as_view(),
         name="get-employee"
+    ),path(
+        'mark-attendance',
+        MarkAttendanceView.as_view(),
+        name="mark-attendance"
     ),
 
     # path(

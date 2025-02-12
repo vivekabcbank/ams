@@ -8,6 +8,7 @@ from .models import Users
 from rest_framework.authtoken.models import Token
 import datetime
 
+
 def decode_str(encrypt_text):
     decode = base64.b64decode(encrypt_text).decode('ascii')
     return decode
@@ -104,9 +105,10 @@ def get_authentication_token(userid):
     token_key = created.key if created else token.key
     return token_key
 
+
 def set_username(first_name=None, last_name=None, check=0):
     name = ""
-    now_timestamp 	= datetime.datetime.now().timestamp()
+    now_timestamp = datetime.datetime.now().timestamp()
     if first_name != None or first_name != "":
         name = first_name
 
@@ -116,34 +118,51 @@ def set_username(first_name=None, last_name=None, check=0):
 
     return name
 
+
 def valid_url_extension(url, extension_list):
     # http://stackoverflow.com/a/10543969/396300
     return any([url.endswith(e) for e in extension_list])
+
 
 def replace_all(text, dic):
     for i, j in dic.items():
         text = text.replace(i, j)
     return text
 
+
 def get_weekdays(day=None):
     days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
     if day:
-        i=days.index(day) # get the index of the selected day
-        d1=days[i:] #get the list from an including this index
-        d1.extend(days[:i]) # append the list form the beginning to this index
+        i = days.index(day)  # get the index of the selected day
+        d1 = days[i:]  # get the list from an including this index
+        d1.extend(days[:i])  # append the list form the beginning to this index
     else:
         d1 = days
     return d1
+
 
 def check_password(hashed_password, user_password):
     try:
         password, salt = hashed_password.split(':')
         return password == hashlib.sha256(
-                salt.encode() + user_password.encode()
-            ).hexdigest()
+            salt.encode() + user_password.encode()
+        ).hexdigest()
     except Exception as e:
         print(e)
         return False
 
+
 def decode_id(id):
     return int(decode_str(id))
+
+
+def decode_multi_value(value):
+    if value:
+        value = value.split(",")
+        try:
+            value = [int(decode_str(x)) for x in value]
+        except ValueError:
+            value = []
+    else:
+        value = []
+    return value

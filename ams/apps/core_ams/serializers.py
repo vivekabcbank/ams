@@ -1,5 +1,60 @@
+from dbm.dumb import error
+
 from ..custom_auth.models import *
 from ..custom_auth.serializerfields import *
+import json
+from datetime import datetime
+
+class MarkAttendanceSerializer(serializers.Serializer):
+    attendance_data = serializers.CharField(
+        required=True,
+        error_messages={"blank": "City can't be blank"}
+    )
+
+    @classmethod
+    def validate(self, data):
+        errors = {}
+        attendance_data = data.get("attendance_data")
+        try:
+            attendance_data = json.loads(attendance_data)
+            employee_ids = [item["employee_id"] for item in attendance_data]
+            employee_ids = decode_multi_value(",".join(employee_ids))
+
+            site_info_ids = [item["site_info_id"] for item in attendance_data]
+            site_info_ids = decode_multi_value(",".join(site_info_ids))
+
+            attendance = [item["attendance"] for item in attendance_data]
+
+            attendance_date = [datetime.strptime(item["date"], "%Y-%m-%d").date() for item in attendance_data]
+
+            valid_employee_ids = list(Employee.objects.filter(isdeleted=False).values_list('id', flat=True))
+            valid_site_info_ids = list(Site.objects.filter(isdeleted=False).values_list('id', flat=True))
+
+            is_employee_ids_valid = all([item in valid_employee_ids for item in employee_ids])
+            is_site_info_ids_valid = all([item in valid_site_info_ids for item in site_info_ids])
+            is_attendance_valid = all([item.upper() in ["P","A","HD","OT"] for item in attendance])
+
+            if not is_employee_ids_valid or not is_site_info_ids_valid or not is_attendance_valid:
+                errors["attendance_data"] = "Invalid data"
+
+            zip_list = list(zip(employee_ids,site_info_ids,attendance,attendance_date))
+
+            json_list = []
+            for item in zip_list:
+                json_list.append({
+                    "employee_id":item[0],
+                    "site_info_id": item[1],
+                    "attendance": item[2],
+                    "date": item[3],
+                })
+                data["json_list"] = json_list
+
+        except Exception as e:
+            errors["attendance_data"] = "Invalid data"
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        return super(MarkAttendanceSerializer, self).validate(self, data)
 
 
 class GetEmployeeSerializer(serializers.Serializer):

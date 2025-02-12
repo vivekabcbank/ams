@@ -5,6 +5,37 @@ from .serializers import *
 from ..custom_auth.http_status_code import *
 from rest_framework.response import Response
 
+class MarkAttendanceView(GenericAPIView):
+    response = {}
+
+    @classmethod
+    def post(cls, request):
+        response = {}
+
+        other_data = MarkAttendanceSerializer(data=request.data)
+        is_other_data_valid = other_data.is_valid()
+
+        if is_other_data_valid:
+            posted_data = other_data.validated_data
+            json_list = posted_data.get("json_list")
+
+            [Attendance.objects.create(
+                employee_id=item["employee_id"],
+                site_info_id=item["site_info_id"],
+                attendance=item["attendance"],
+                date=item["date"],
+            ) for item in json_list]
+
+            response['message'] = "Attendance added successfully"
+            response['status'] = HTTP_200_OK
+        else:
+            response['errors'] = get_json_errors(
+                other_data.errors
+            )
+            response['status'] = HTTP_204_NO_CONTENT
+
+        return Response(response)
+
 class GetEmployeeView(GenericAPIView):
     response = {}
 

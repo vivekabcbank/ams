@@ -163,6 +163,6 @@ cython_debug/
 #.idea/
 
 # Ignore Docker volumes (which should not be committed to Git)
-docker-compose.yml
+#docker-compose.yml
 Dockerfile
 /db.sqlite3

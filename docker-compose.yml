@@ -16,7 +16,8 @@ services:
       - ams_network
 
   ams-web:
-    image: vivekath1/ams-web:v.0.7   # Pull from Docker Hub
+    image: vivekath1/ams-web:v.1.0   # Pull from Docker Hub
+#    image: ams-web:v.0.2   # Pull from Docker Hub
     container_name: ams-web
     depends_on:
       - db

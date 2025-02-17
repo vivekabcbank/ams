@@ -105,7 +105,7 @@ class ApplyLeaveView(GenericAPIView):
             leave_serializer_is_valid = leave_serializer.is_valid()
 
             if leave_serializer_is_valid:
-                leave_serializer.save()
+                leave_serializer.create(validated_data=posted_data)
                 response = {
                     "message": "Leave added successfully",
                     'status': HTTP_200_OK

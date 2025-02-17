@@ -24,7 +24,7 @@ SECRET_KEY = 'django-insecure-491rni3mumgwh#k2_-&0w+t^_^_@hu4f(^$d1i$tubsuv9!0x1
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-ALLOWED_HOSTS = [".localhost", ".127.0.0.1","a133-2401-4900-8fc8-e860-1c3e-f6fc-e8ad-bbaa.ngrok-free.app"]
+ALLOWED_HOSTS = [".localhost", ".127.0.0.1","a133-2401-4900-8fc8-e860-1c3e-f6fc-e8ad-bbaa.ngrok-free.app","0.0.0.0"]
 
 
 # Application definition
@@ -85,6 +85,27 @@ DATABASES = {
     }
 }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',  # Correct backend for PostgreSQL
+#         'NAME': 'ams', # database name
+#         'USER': 'mac',  # Make sure this matches the PostgreSQL username
+#         'PASSWORD': 'Password1',  # Make sure this matches the PostgreSQL password
+#         'HOST': '127.0.0.1',  # localhost
+#         'PORT': '5432',  # default PostgreSQL port
+#     }
+# }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',  # Correct backend for PostgreSQL
+#         'NAME': 'postgres',  # Database name (must match POSTGRES_DB in docker-compose)
+#         'USER': 'postgres',  # Database user (must match POSTGRES_USER in docker-compose)
+#         'PASSWORD': 'root',  # Database password (must match POSTGRES_PASSWORD in docker-compose)
+#         'HOST': 'db',  # The name of the database service in docker-compose
+#         'PORT': '5432',  # Default PostgreSQL port
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -167,3 +188,13 @@ SWAGGER_SETTINGS = {
         'patch'
     ],
 }
+
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django_redis.cache.RedisCache',
+#         'LOCATION': 'redis://127.0.0.1:6379/1',  # Redis instance running on localhost, DB 1
+#         'OPTIONS': {
+#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#         }
+#     }
+# }

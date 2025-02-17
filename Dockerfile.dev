@@ -1,0 +1,26 @@
+# Use the official Python image for development
+FROM python:3.10
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the requirements files
+COPY requirements/base.txt requirements/base.txt
+
+COPY wait-for-it.sh /usr/local/bin/wait-for-it
+RUN chmod +x /usr/local/bin/wait-for-it
+
+# Install development dependencies
+RUN pip install --no-cache-dir -r requirements/base.txt
+
+# Copy the entire project into the container
+COPY . .
+
+# Expose the port for the Django app (development server)
+EXPOSE 8000
+
+# Command to run the Django application (with auto-reload for development)
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

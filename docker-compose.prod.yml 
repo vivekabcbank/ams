@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod  # Use the production Dockerfile
+    container_name: ams
+    command: ["gunicorn", "ams.wsgi:application", "--bind", "0.0.0.0:8000"]  # Use gunicorn in production
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    env_file:
+      - .env  # Include environment variables for settings
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}  # Use environment variables for better security
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db_data:/var/lib/postgresql/data  # Store data in a named volume
+    ports:
+      - "5432:5432"
+    networks:
+      - backend  # Optional: you can define custom networks to isolate services
+
+volumes:
+  db_data:  # Named volume for persistent PostgreSQL data
+
+networks:
+  backend:
+    driver: bridge  # Optional: Define custom network

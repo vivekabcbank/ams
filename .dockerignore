@@ -1,0 +1,30 @@
+# Ignore Python bytecode files
+*.pyc
+*.pyo
+__pycache__
+
+# Ignore virtual environments
+venv/
+env/
+.env/
+
+# Ignore local settings or configuration files
+*.env
+*.local
+*.log
+
+# Ignore test directories or test files
+tests/
+test/
+
+# Ignore git files and folders
+.git
+.gitignore
+
+# Ignore Dockerfiles (if you don't want them in the build context)
+Dockerfile*
+.dockerignore
+
+# Ignore other unnecessary files or directories
+*.bak
+*.swp

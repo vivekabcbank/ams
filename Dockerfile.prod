@@ -1,0 +1,23 @@
+# Use official Python image for production
+FROM python:3.10
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the requirements files
+COPY requirements/base.txt requirements/base.txt
+
+# Install production dependencies
+RUN pip install --no-cache-dir -r requirements/base.txt
+
+# Copy the entire project into the container
+COPY . .
+
+# Expose the port for the application (Production server)
+EXPOSE 8000
+
+# Use gunicorn as the WSGI server for production
+CMD ["gunicorn", "ams.wsgi:application", "--bind", "0.0.0.0:8000"]

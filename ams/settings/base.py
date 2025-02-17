@@ -78,12 +78,12 @@ WSGI_APPLICATION = 'ams.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 # DATABASES = {
 #     'default': {
@@ -96,16 +96,16 @@ DATABASES = {
 #     }
 # }
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',  # Correct backend for PostgreSQL
-#         'NAME': 'postgres',  # Database name (must match POSTGRES_DB in docker-compose)
-#         'USER': 'postgres',  # Database user (must match POSTGRES_USER in docker-compose)
-#         'PASSWORD': 'root',  # Database password (must match POSTGRES_PASSWORD in docker-compose)
-#         'HOST': 'db',  # The name of the database service in docker-compose
-#         'PORT': '5432',  # Default PostgreSQL port
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',  # Correct backend for PostgreSQL
+        'NAME': 'postgres',  # Database name (must match POSTGRES_DB in docker-compose)
+        'USER': 'postgres',  # Database user (must match POSTGRES_USER in docker-compose)
+        'PASSWORD': 'root',  # Database password (must match POSTGRES_PASSWORD in docker-compose)
+        'HOST': 'db',  # The name of the database service in docker-compose
+        'PORT': '5432',  # Default PostgreSQL port
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

@@ -1,26 +1,12 @@
 version: '3'
 
 services:
-  db:
-    image: postgres:17.3
-    container_name: db
-    environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: root  # Use a strong password here
-    volumes:
-      - ams_db_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    networks:
-      - ams_network
-
   ams-web:
     build:
       context: .
       dockerfile: Dockerfile.prod  # Use the development Dockerfile (or Dockerfile.prod for production)
     container_name: ams-web
-    image: ams-web:v.0.2
+    image: ams-web:v.0.1
     depends_on:
       - db
     command: >
@@ -30,6 +16,20 @@ services:
     volumes:
       - ./wait-for-it.sh:/usr/local/bin/wait-for-it.sh  # Mount the script correctly
       - ./static:/app/static  # Ensure static files are correctly placed here
+    networks:
+      - ams_network
+
+  db:
+    image: postgres:17.3
+    container_name: db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}  # Define the database name (same as in Django settings)
+      POSTGRES_USER: ${POSTGRES_USER}  # Define the database user (same as in Django settings)
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}  # Define the password (same as in Django settings)
+    volumes:
+      - ams_db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     networks:
       - ams_network
 

@@ -14,7 +14,7 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-
+from decouple import config
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -24,8 +24,8 @@ SECRET_KEY = 'django-insecure-491rni3mumgwh#k2_-&0w+t^_^_@hu4f(^$d1i$tubsuv9!0x1
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-ALLOWED_HOSTS = ["*"]
 
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
@@ -78,13 +78,7 @@ WSGI_APPLICATION = 'ams.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
+# This is to connect locally added pg admin with this django app
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql_psycopg2',  # Correct backend for PostgreSQL
@@ -96,12 +90,43 @@ WSGI_APPLICATION = 'ams.wsgi.application'
 #     }
 # }
 
+# HOST = config('HOST', default='', cast=str)
+# if HOST == "test":
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.sqlite3',
+#             'NAME': BASE_DIR / 'db.sqlite3',
+#         }
+#     }
+# elif HOST == "development":
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.postgresql_psycopg2',  # Correct backend for PostgreSQL
+#             'NAME': config('POSTGRES_DB', default='', cast=str), # Database name (must match POSTGRES_DB in docker-compose)
+#             'USER': config('POSTGRES_USER', default='', cast=str), # Database user (must match POSTGRES_USER in docker-compose)
+#             'PASSWORD': config('POSTGRES_PASSWORD', default='', cast=str), # Database password (must match POSTGRES_PASSWORD in docker-compose)
+#             'HOST': 'db',  # The name of the database service in docker-compose
+#             'PORT': '5432',  # Default PostgreSQL port
+#         }
+#     }
+# else :
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.postgresql_psycopg2',  # Correct backend for PostgreSQL
+#             'NAME': config('POSTGRES_DB', default='', cast=str), # Database name (must match POSTGRES_DB in docker-compose)
+#             'USER': config('POSTGRES_USER', default='', cast=str), # Database user (must match POSTGRES_USER in docker-compose)
+#             'PASSWORD': config('POSTGRES_PASSWORD', default='', cast=str), # Database password (must match POSTGRES_PASSWORD in docker-compose)
+#             'HOST': 'db',  # The name of the database service in docker-compose
+#             'PORT': '5432',  # Default PostgreSQL port
+#         }
+#     }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',  # Correct backend for PostgreSQL
-        'NAME': 'postgres',  # Database name (must match POSTGRES_DB in docker-compose)
-        'USER': 'postgres',  # Database user (must match POSTGRES_USER in docker-compose)
-        'PASSWORD': 'root',  # Database password (must match POSTGRES_PASSWORD in docker-compose)
+        'NAME': "postgres",  # Database name (must match POSTGRES_DB in docker-compose)
+        'USER': "postgres",# Database user (must match POSTGRES_USER in docker-compose)
+        'PASSWORD': "root",# Database password (must match POSTGRES_PASSWORD in docker-compose)
         'HOST': 'db',  # The name of the database service in docker-compose
         'PORT': '5432',  # Default PostgreSQL port
     }

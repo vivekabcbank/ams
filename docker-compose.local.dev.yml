@@ -2,12 +2,12 @@ version: '3'
 
 services:
   # Django web service
-  web:
+  ams-web:
     build:
       context: .
       dockerfile: Dockerfile.dev  # Use the development Dockerfile (or Dockerfile.prod for production)
     container_name: ams-web
-    image: ams-web:v.0.2
+    image: ams-web:v.0.1
     command: >
       sh -c "./wait-for-it.sh db:5432 -- python manage.py migrate && python manage.py runserver 0.0.0.0:8000"  # Migrate DB and start the server
     volumes:
@@ -23,9 +23,9 @@ services:
   db:
     image: postgres:17.3  # Use the official PostgreSQL 13 image
     environment:
-      POSTGRES_DB: postgres  # Define the database name (same as in Django settings)
-      POSTGRES_USER: postgres  # Define the database user (same as in Django settings)
-      POSTGRES_PASSWORD: root  # Define the password (same as in Django settings)
+      POSTGRES_DB: ${POSTGRES_DB}  # Define the database name (same as in Django settings)
+      POSTGRES_USER: ${POSTGRES_USER}  # Define the database user (same as in Django settings)
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}  # Define the password (same as in Django settings)
     volumes:
       - db_data:/var/lib/postgresql/data  # Persist the database data
     ports:

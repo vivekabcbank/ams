@@ -1,35 +1,46 @@
 version: '3'
 
 services:
-  # Django web service
-  web:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev  # Use the development Dockerfile (or Dockerfile.prod for production)
-    container_name: ams
-    image: ams-web:v.0.2
-    command: >
-      sh -c "./wait-for-it.sh db:5432 -- python manage.py migrate && python manage.py runserver 0.0.0.0:8000"  # Migrate DB and start the server
-    volumes:
-      - .:/app  # Bind mount the current directory to /app inside the container
-    ports:
-      - "8000:8000"  # Expose port 8000 for Django
-    depends_on:
-      - db  # Ensure the database service starts first
-    env_file:
-      - .env  # Load environment variables (optional)
-
-  # PostgreSQL database service
   db:
-    image: postgres:17.3  # Use the official PostgreSQL 13 image
+    image: postgres:17.3
+    container_name: db
     environment:
-      POSTGRES_DB: postgres  # Define the database name (same as in Django settings)
-      POSTGRES_USER: postgres  # Define the database user (same as in Django settings)
-      POSTGRES_PASSWORD: root  # Define the password (same as in Django settings)
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
     volumes:
-      - db_data:/var/lib/postgresql/data  # Persist the database data
+      - ams_db_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"  # Expose port 5432 for PostgreSQL
+      - "5432:5432"  # Exposing port 5432 on the host for PostgreSQL
+    networks:
+      - ams_network
+
+  ams-web:
+#    image: vivekath1/ams-web:v.1.1   # Pull from Docker Hub
+#    Pull from Docker Hub< before pull push from local follow below steps>
+#    1. docker build --platform linux/amd64 -f Dockerfile.dev -t ams-web:v.0.1 . <OR> docker build -f Dockerfile.dev -t ams-web:v.0.1 .
+#    2. docker tag ams-web:v.0.1 vivekath1/ams-web:v.0.1
+#    3. docker push vivekath1/ams-web:v.0.1
+#
+    image: ams-web:v.0.2   # take from Docker Desktop or can directly take from Docker Desktop
+
+    container_name: ams-web
+    depends_on:
+      - db
+#    command: ["./wait-for-it.sh", "db:5432", "--", "python", "manage.py", "runserver", "0.0.0.0:8000"]
+    command: >
+      sh -c "./wait-for-it.sh db:5432 -- python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "8000:8000"  # Exposing port 8000 for the web app
+    volumes:
+      - ./wait-for-it.sh:/wait-for-it.sh   # Mount the wait-for-it.sh script into the container
+    networks:
+      - ams_network
 
 volumes:
-  db_data:  # Define volume to persist PostgreSQL data
+  ams_db_data:  # This will be created locally for PostgreSQL data
+    driver: local
+
+networks:
+  ams_network:
+    driver: bridge

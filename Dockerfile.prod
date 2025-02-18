@@ -1,23 +1,86 @@
-# Use official Python image for production
-FROM python:3.10
+# Stage 1: Base build stage (builder)
+# This uses the Python 3.13 slim image as the base for the builder stage. "Slim" versions of images are minimal, to reduce size.
+FROM python:3.13-slim AS builder
 
-# Set environment variables
+# Install the required system dependencies for psycopg2 and others
+# This installs the system packages needed for compiling Python packages that require native dependencies (e.g., libpq-dev for PostgreSQL support
+# and gcc for compiling code). The rm -rf removes cached lists to reduce the image size.
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libpq-dev gcc && \
+    rm -rf /var/lib/apt/lists/*  # Clean up to reduce image size
+
+# Set environment variables to optimize Python
+# PYTHONDONTWRITEBYTECODE=1 prevents Python from writing .pyc files.
+# PYTHONUNBUFFERED=1 ensures that Python outputs logs directly to the console (not buffered).
+ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Set the working directory
+# Create the app directory and set the working directory
+# This sets /app as the working directory for the subsequent steps.
 WORKDIR /app
 
-# Copy the requirements files
-COPY requirements/base.txt requirements/base.txt
+# Install Python dependencies from the base requirements
+# The pip command is upgraded to the latest version. Then, base.txt (which contains the Python package dependencies) is copied to the container.
+RUN pip install --upgrade pip
+COPY requirements/base.txt /app/requirements/base.txt
 
-# Install production dependencies
-RUN pip install --no-cache-dir -r requirements/base.txt
 
-# Copy the entire project into the container
-COPY . .
+# Copy the wait-for-it script and set it as executable
+# wait-for-it.sh is a shell script used for waiting for a service (like a database) to be ready before continuing. It's made executable.
+COPY wait-for-it.sh /usr/local/bin/wait-for-it
+RUN chmod +x /usr/local/bin/wait-for-it
 
-# Expose the port for the application (Production server)
+# The pip command installs the Python dependencies defined in base.txt.
+RUN pip install --no-cache-dir -r /app/requirements/base.txt
+
+# Stage 2: Production stage
+# A new image is based on Python 3.13 slim, but this time it's for the production environment.
+FROM python:3.13-slim
+
+# Install the same system dependencies in the production image
+# Reinstalls libpq-dev (needed for PostgreSQL). This step ensures that the production environment has the necessary system packages.
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libpq-dev && \
+    rm -rf /var/lib/apt/lists/*  # Clean up after installing packages
+
+# Create a non-root user and set up the app directory
+# A non-root user appuser is created to increase security. The /app directory is created and ownership is transferred to the appuser.
+RUN useradd -m -r appuser && \
+    mkdir /app && \
+    chown -R appuser /app
+
+# Copy the Python dependencies from the builder stage
+# This copies the installed Python packages and executables (like wait-for-it.sh) from the builder stage to the production container.
+# This avoids the need to reinstall packages in the production stage.
+COPY --from=builder /usr/local/lib/python3.13/site-packages/ /usr/local/lib/python3.13/site-packages/
+COPY --from=builder /usr/local/bin/ /usr/local/bin/
+
+# Copy the application code and ensure correct ownership
+# The application code from the builder is copied into the production container, and ownership is set to appuser.
+COPY --from=builder /app /app
+COPY --chown=appuser:appuser . .
+
+# Expose the port for the application (production server)
+# The container will expose port 8000 for the app (common for web apps).
 EXPOSE 8000
 
-# Use gunicorn as the WSGI server for production
-CMD ["gunicorn", "ams.wsgi:application", "--bind", "0.0.0.0:8000"]
+# Make the entrypoint script executable
+# The entrypoint script entrypoint.prod.sh is copied into the container and made executable. This script will likely start the application when the container runs.
+COPY entrypoint.prod.sh /app/entrypoint.prod.sh
+RUN chmod +x /app/entrypoint.prod.sh
+
+# Switch to non-root user for security
+# The USER directive switches the user from root to appuser for security reasons, ensuring the app runs with the least privileges.
+USER appuser
+
+# Start the application using Gunicorn
+# The CMD directive sets the default command to execute when the container starts, which runs the entrypoint.prod.sh script (likely to launch the application).
+CMD ["/app/entrypoint.prod.sh"]
+
+# Summary:
+# Builder Stage: Installs dependencies, sets up the environment, and prepares the app.
+# Production Stage: Creates a minimal production image by copying over only the necessary files and dependencies. It then runs the application in a secure, non-root environment.
+# This multi-stage approach minimizes the final image size and ensures only the essential files and dependencies are included in the production image.

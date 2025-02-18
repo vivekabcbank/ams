@@ -1,7 +1,12 @@
 # Use the official Python image for development
+# This line specifies the base image for the container. It uses the official Python image with version 3.10.
 FROM python:3.10
 
 # Set environment variables
+# This environment variable prevents Python from writing .pyc files (bytecode) to the filesystem, which is generally not necessary in development.
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# This environment variable ensures that Python’s output is not buffered. This is useful for logging because it ensures that output appears in real-time instead of being buffered.
 ENV PYTHONUNBUFFERED=1
 
 # Set the working directory
@@ -10,17 +15,28 @@ WORKDIR /app
 # Copy the requirements files
 COPY requirements/base.txt requirements/base.txt
 
+# This copies the wait-for-it.sh script into the container, which is a utility to wait for a service to be available before continuing with the execution of
+# the container. This is often used for waiting for a database or other services to be ready.
 COPY wait-for-it.sh /usr/local/bin/wait-for-it
+
+# This grants execute permissions to the wait-for-it.sh script, making it executable within the container.
 RUN chmod +x /usr/local/bin/wait-for-it
 
 # Install development dependencies
+# This installs the Python dependencies listed in the requirements/base.txt file.
+# The --no-cache-dir flag ensures that pip doesn’t store cache files during the installation, reducing the size of the container.
 RUN pip install --no-cache-dir -r requirements/base.txt
 
 # Copy the entire project into the container
+# This copies all files from the current directory on your local machine (where the Dockerfile resides) into the container’s /app directory.
+# This is usually where your Django application code resides.
 COPY . .
 
 # Expose the port for the Django app (development server)
 EXPOSE 8000
 
 # Command to run the Django application (with auto-reload for development)
+# This is the default command that will be executed when the container is run.
+# It starts the Django development server (python manage.py runserver) on 0.0.0.0:8000, making it accessible from outside the container.
+# 0.0.0.0 allows the server to accept connections from any network interface, which is important when running in Docker.
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

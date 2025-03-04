@@ -43,3 +43,4 @@ urlpatterns = [
 
 # Writing test cases in all apps Django, flask, fast-api, also do any one implementations like payment getways
 # Optimize all apps Django, flask, fast-api with needed requirements
+# implement logger, caching in all thrree apps

@@ -21,6 +21,7 @@ class TestWebApi(APITestCase):
 
         self.userauth = None
         self.usertype_id = None
+        self.supervisor_usertype_id = None
         self.token = None
         self.site_info_id = None
         self.employee_id = None
@@ -31,6 +32,7 @@ class TestWebApi(APITestCase):
             self.userSignup_invalid_email()
 
             self.insert_user_type()
+            self.insert_supervisor_user_type()
 
             self.signup_user()
             self.signin_user()
@@ -41,6 +43,7 @@ class TestWebApi(APITestCase):
             self.get_employee()
             self.apply_leave()
             self.make_superviser()
+
         finally:
             cov.stop()
             cov.save()
@@ -89,6 +92,30 @@ class TestWebApi(APITestCase):
         print(f"\nStatus Code: {response.status_code}")
         status = get_response["status"]
         self.usertype_id = get_response["result"]["id"]
+        print(f"\nStatus Code from end point: {status}")
+        self.assertEqual(status, 200)
+
+    def insert_supervisor_user_type(self):
+        print("")
+        print("")
+        print("-----------------------------Insert user type")
+        print("")
+        url = reverse('insert-user-type')
+        data = {
+            "userauth": self.userauth,
+            "typename": "Supervisor"
+        }
+
+        response = self.client.post(url, data, format='json', HTTP_AUTHORIZATION='token {}'.format(self.token))
+
+        get_response = json.loads(response.content.decode('utf8'))
+
+        print("\nResult:\n")
+        print(get_response)
+
+        print(f"\nStatus Code: {response.status_code}")
+        status = get_response["status"]
+        self.supervisor_usertype_id = get_response["result"]["id"]
         print(f"\nStatus Code from end point: {status}")
         self.assertEqual(status, 200)
 

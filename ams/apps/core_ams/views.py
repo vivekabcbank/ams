@@ -42,8 +42,9 @@ class GetEmployeeView(GenericAPIView):
     @classmethod
     def get(cls, request):
         response = {}
-
-        other_data = GetEmployeeSerializer(data=request.data)
+        request_data = {}
+        request_data["site_info_id"] = request.GET.get("site_info_id")
+        other_data = GetEmployeeSerializer(data=request_data)
         is_other_data_valid = other_data.is_valid()
 
         if is_other_data_valid:
@@ -68,8 +69,10 @@ class GetSitesView(GenericAPIView):
     @classmethod
     def get(cls, request):
         response = {}
-
-        other_data = GetSitesSerializer(data=request.data)
+        request_data = {}
+        request_data["usertype_id"] = request.GET.get("usertype_id")
+        request_data["owner_user_id"] = request.GET.get("owner_user_id")
+        other_data = GetSitesSerializer(data=request_data)
         is_other_data_valid = other_data.is_valid()
 
         if is_other_data_valid:
@@ -197,8 +200,9 @@ class InsertUserTypeView(GenericAPIView):
             posted_data = other_data.validated_data
             user_type_serializer = InsertUserTypeSerializer(data=posted_data)
             if user_type_serializer.is_valid():
-                user_type_serializer.save()
+                user_type = user_type_serializer.save()
                 response['status'] = HTTP_200_OK
+                response["result"] = {"id": encode_str(user_type.id)}
                 response["message"] = "User type added successfully"
             else:
                 response['errors'] = get_json_errors(
@@ -468,7 +472,7 @@ class GetUserTypes(GenericAPIView):
         result = UserType.objects.filter(isdeleted=False)
         if result:
             result_serializer = UserTypeSerializer(result, many=True)
-            response['countries'] = result_serializer.data
+            response['user_types'] = result_serializer.data
             response['status'] = HTTP_200_OK
         else:
             response['countries'] = {}

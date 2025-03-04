@@ -39,13 +39,13 @@ def encoded_id(obj):
 
 
 def is_Empty(string: str):
-    if string is "" or string is '':
+    if string == "" or string == '':
         return True
     return False
 
 
 def is_not_Empty(string: str):
-    if string is not "" and string is not '':
+    if string != "" and string != '':
         return True
     return False
 

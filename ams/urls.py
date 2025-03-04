@@ -40,3 +40,6 @@ urlpatterns = [
     path('core/',include('ams.apps.core_ams.urls')),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='swagger-schema'),
 ]
+
+# Writing test cases in all apps Django, flask, fast-api, also do any one implementations like payment getways
+# Optimize all apps Django, flask, fast-api with needed requirements

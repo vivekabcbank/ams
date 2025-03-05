@@ -7,6 +7,7 @@ from django.db.models.signals import post_save
 from django.conf import settings
 from rest_framework.authtoken.models import Token
 
+
 class UserType(models.Model):
     typename = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
@@ -78,6 +79,18 @@ class City(models.Model):
 
     def __str__(self):
         return f"{self.cityname}"
+
+
+class UserManager(models.Manager):
+
+    def get_by_usertypes(self, type):
+        return self.filter(isdeleted=False, usertype_id=type)
+
+    def get_by_email(self, email):
+        return self.get(isdeleted=False, email=email)
+
+    def get_queryset(self):
+        return super().get_queryset().filter(isdeleted=False)
 
 
 class Users(AbstractUser):
@@ -160,6 +173,8 @@ class Users(AbstractUser):
     isdeleted = models.BooleanField(default=False)
     createddate = models.DateTimeField(default=utils.timezone.now, blank=True)
     updateddate = models.DateTimeField(blank=True, null=True)
+
+    objects = UserManager()
 
     class Meta:
         db_table = 'auth_user'
@@ -270,6 +285,7 @@ class Employee(models.Model):
     def __str__(self):
         return f"{self.user.username}"
 
+
 class Attendance(models.Model):
     employee = models.ForeignKey(
         Employee,
@@ -337,6 +353,7 @@ class Leave(models.Model):
 
     def __str__(self):
         return f"{self.employee.id}"
+
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_auth_token(sender, instance=None, created=False, **kwargs):

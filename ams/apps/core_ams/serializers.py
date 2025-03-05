@@ -211,13 +211,11 @@ class CreateSiteSerializer(serializers.ModelSerializer):
 
 class MakeSuperviserSerializer(serializers.Serializer):
     employee_id = employee_id
-    usertype_id = usertype_id
     password = password
 
     @classmethod
     def validate(self, data):
         errors = {}
-        data["usertype_id"] = decode_id(data.get("usertype_id"))
         data["employee_id"] = employee_id = decode_id(data.get("employee_id"))
 
         try:

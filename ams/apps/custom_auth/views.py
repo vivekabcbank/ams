@@ -9,9 +9,9 @@ from django.contrib.auth import login, logout
 from pdb import set_trace
 
 
-class InsertEmployeeView(GenericAPIView):
-
+class InsertEmployeeView_v1(GenericAPIView):
     serializer_class = ValidateEmployeeDetailsSerializers
+
     @classmethod
     def post(cls, request):
         response = {}
@@ -55,7 +55,8 @@ class InsertEmployeeView(GenericAPIView):
         )
         return employee
 
-class UserSignUpView(GenericAPIView):
+
+class UserSignUpView_v1(GenericAPIView):
     authentication_classes = ()
     permission_classes = ()
 
@@ -97,7 +98,7 @@ class UserSignUpView(GenericAPIView):
         return Response(response)
 
 
-class UserSigninView(GenericAPIView):
+class UserSigninView_v1(GenericAPIView):
     authentication_classes = ()
     permission_classes = ()
 

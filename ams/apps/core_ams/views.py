@@ -5,7 +5,7 @@ from .serializers import *
 from ..custom_auth.http_status_code import *
 from rest_framework.response import Response
 
-class MarkAttendanceView(GenericAPIView):
+class MarkAttendanceView_v1(GenericAPIView):
     serializer_class = MarkAttendanceSerializer
     @classmethod
     def post(cls, request):
@@ -35,7 +35,7 @@ class MarkAttendanceView(GenericAPIView):
 
         return Response(response)
 
-class GetEmployeeView(GenericAPIView):
+class GetEmployeeView_v1(GenericAPIView):
 
     serializer_class = GetEmployeeSerializer
 
@@ -63,7 +63,7 @@ class GetEmployeeView(GenericAPIView):
         return Response(response)
 
 
-class GetSitesView(GenericAPIView):
+class GetSitesView_v1(GenericAPIView):
     serializer_class = GetSitesSerializer
 
     @classmethod
@@ -93,7 +93,7 @@ class GetSitesView(GenericAPIView):
 
         return Response(response)
 
-class ApplyLeaveView(GenericAPIView):
+class ApplyLeaveView_v1(GenericAPIView):
     serializer_class = ApplyLeaveSerializers
 
     @classmethod
@@ -125,7 +125,7 @@ class ApplyLeaveView(GenericAPIView):
 
         return Response(response)
 
-class InsertSiteView(GenericAPIView):
+class InsertSiteView_v1(GenericAPIView):
     serializer_class = ValidateSiteDetailsSerializers
 
     @classmethod
@@ -159,7 +159,7 @@ class InsertSiteView(GenericAPIView):
 
         return Response(response)
 
-class MakeSuperviserView(GenericAPIView):
+class MakeSuperviserView_v1(GenericAPIView):
     serializer_class = MakeSuperviserSerializer
 
     @classmethod
@@ -187,7 +187,7 @@ class MakeSuperviserView(GenericAPIView):
 
         return Response(response)
 
-class InsertUserTypeView(GenericAPIView):
+class InsertUserTypeView_v1(GenericAPIView):
     serializer_class = InsertUserTypeSerializer
 
     @classmethod
@@ -223,7 +223,7 @@ class InsertUserTypeView(GenericAPIView):
         return Response(response)
 
 
-class InsertCountryView(GenericAPIView):
+class InsertCountryView_v1(GenericAPIView):
 
     @classmethod
     def post(cls, request):
@@ -249,7 +249,7 @@ class InsertCountryView(GenericAPIView):
         return Response(response)
 
 
-class InsertStateView(GenericAPIView):
+class InsertStateView_v1(GenericAPIView):
 
     @classmethod
     def post(cls, request):
@@ -274,7 +274,7 @@ class InsertStateView(GenericAPIView):
         return Response(response)
 
 
-class InsertCityView(GenericAPIView):
+class InsertCityView_v1(GenericAPIView):
 
     @classmethod
     def post(cls, request):
@@ -300,7 +300,7 @@ class InsertCityView(GenericAPIView):
         return Response(response)
 
 
-class GetStateByCountry(GenericAPIView):
+class GetStateByCountry_v1(GenericAPIView):
     authentication_classes = ()
     permission_classes = ()
 
@@ -363,7 +363,7 @@ class GetStateByCountry(GenericAPIView):
         return Response(response)
 
 
-class GetCityByState(GenericAPIView):
+class GetCityByState_v1(GenericAPIView):
     authentication_classes = ()
     permission_classes = ()
 
@@ -426,7 +426,7 @@ class GetCityByState(GenericAPIView):
         return Response(response)
 
 
-class GetCountry(GenericAPIView):
+class GetCountry_v1(GenericAPIView):
     authentication_classes = ()
     permission_classes = ()
 
@@ -467,7 +467,7 @@ class GetCountry(GenericAPIView):
         return Response(response)
 
 
-class GetUserTypes(GenericAPIView):
+class GetUserTypes_v1(GenericAPIView):
     serializer_class = UserTypeSerializer
 
     @classmethod

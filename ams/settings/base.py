@@ -246,89 +246,90 @@ SWAGGER_SETTINGS = {
 # }
 
 
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'handlers': {
-#         # Console handler for real-time logging (e.g., useful in development or when using a process manager like Gunicorn)
-#         'console': {
-#             'level': 'WARNING',  # Only log warnings and errors to the console in production
-#             'class': 'logging.StreamHandler',
-#         },
-#         # File handler for general logs, with rotation to prevent file overflow
-#         'file': {
-#             'level': 'INFO',  # Log INFO level and higher to files (errors, important events)
-#             'class': 'logging.handlers.RotatingFileHandler',
-#             'filename': 'django_requests.log',  # Log file for requests
-#             'maxBytes': 1024 * 1024 * 10,  # Maximum size of log file (10 MB in this example)
-#             'backupCount': 5,  # Keep 5 old log files (older logs will be archived)
-#         },
-#         # Error log file handler (separate from general logs)
-#         'error_file': {
-#             'level': 'ERROR',  # Only log errors to this file
-#             'class': 'logging.handlers.RotatingFileHandler',
-#             'filename': 'django_error.log',
-#             'maxBytes': 1024 * 1024 * 10,  # 10 MB size limit
-#             'backupCount': 5,  # Keep 5 old error logs
-#         },
-#         # Optional: Error logging to external services like Sentry
-#         # 'sentry': {
-#         #     'level': 'ERROR',  # Log only errors to external logging service
-#         #     'class': 'raven.handlers.logging.SentryHandler',
-#         #     'dsn': 'your_sentry_dsn_here',
-#         # },
-#     },
-#     'loggers': {
-#         # General logger for Django-related logs
-#         'django': {
-#             'handlers': ['console', 'file', 'error_file'],  # Log to console, files, and error log
-#             'level': 'INFO',  # Log INFO level and higher (errors, warnings, info)
-#             'propagate': True,  # Allow logs to propagate to parent loggers
-#         },
-#         # Loggers for specific applications can be added here if needed
-#         # Example:
-#         # 'django.db.backends': {
-#         #     'handlers': ['file'],
-#         #     'level': 'ERROR',
-#         #     'propagate': False,
-#         # },
-#     },
-# }
-
-
 LOGGING = {
-
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
+        # Console handler for real-time logging (e.g., useful in development or when using a process manager like Gunicorn)
         'console': {
-            'level': 'INFO',  # Log level for console (stdout)
+            'level': 'WARNING',  # Only log warnings and errors to the console in production
             'class': 'logging.StreamHandler',
-            'stream': 'ext://sys.stdout',  # Send logs to stdout
         },
+        # File handler for general logs, with rotation to prevent file overflow
         'file': {
-            'level': 'INFO',
+            'level': 'INFO',  # Log INFO level and higher to files (errors, important events)
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': '/var/log/django/django_requests.log',  # Log files inside container
-            'maxBytes': 1024 * 1024 * 10,  # 10 MB file size limit
-            'backupCount': 5,  # Keep up to 5 backup files
+            'filename': 'django_requests.log',  # Log file for requests
+            'maxBytes': 1024 * 1024 * 10,  # Maximum size of log file (10 MB in this example)
+            'backupCount': 5,  # Keep 5 old log files (older logs will be archived)
         },
-
+        # Error log file handler (separate from general logs)
         'error_file': {
-            'level': 'ERROR',  # Log level for errors
+            'level': 'ERROR',  # Only log errors to this file
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': '/var/log/django/django_error.log',  # Log errors inside container
-            'maxBytes': 1024 * 1024 * 10,  # 10 MB file size limit
-            'backupCount': 5,  # Keep up to 5 backup error files
+            'filename': 'django_error.log',
+            'maxBytes': 1024 * 1024 * 10,  # 10 MB size limit
+            'backupCount': 5,  # Keep 5 old error logs
         },
+        # Optional: Error logging to external services like Sentry
+        # 'sentry': {
+        #     'level': 'ERROR',  # Log only errors to external logging service
+        #     'class': 'raven.handlers.logging.SentryHandler',
+        #     'dsn': 'your_sentry_dsn_here',
+        # },
     },
     'loggers': {
+        # General logger for Django-related logs
         'django': {
-            'handlers': ['console', 'file', 'error_file'],  # Output to console, file, and error file
-            'level': 'INFO',  # Log level (INFO, ERROR, etc.)
-            'propagate': True,
+            'handlers': ['console', 'file', 'error_file'],  # Log to console, files, and error log
+            'level': 'INFO',  # Log INFO level and higher (errors, warnings, info)
+            'propagate': True,  # Allow logs to propagate to parent loggers
         },
+        # Loggers for specific applications can be added here if needed
+        # Example:
+        # 'django.db.backends': {
+        #     'handlers': ['file'],
+        #     'level': 'ERROR',
+        #     'propagate': False,
+        # },
     },
 }
+
+
+# LOGGING = {
+#
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'console': {
+#             'level': 'INFO',  # Log level for console (stdout)
+#             'class': 'logging.StreamHandler',
+#             'stream': 'ext://sys.stdout',  # Send logs to stdout
+#         },
+#         'file': {
+#             'level': 'INFO',
+#             'class': 'logging.handlers.RotatingFileHandler',
+#             'filename': '/var/log/django/django_requests.log',  # Log files inside container
+#             'maxBytes': 1024 * 1024 * 10,  # 10 MB file size limit
+#             'backupCount': 5,  # Keep up to 5 backup files
+#         },
+#
+#         'error_file': {
+#             'level': 'ERROR',  # Log level for errors
+#             'class': 'logging.handlers.RotatingFileHandler',
+#             'filename': '/var/log/django/django_error.log',  # Log errors inside container
+#             'maxBytes': 1024 * 1024 * 10,  # 10 MB file size limit
+#             'backupCount': 5,  # Keep up to 5 backup error files
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['console', 'file', 'error_file'],  # Output to console, file, and error file
+#             'level': 'INFO',  # Log level (INFO, ERROR, etc.)
+#             'propagate': True,
+#         },
+#     },
+# }
+
 # DEBUG, INFO, WARNING, ERROR, CRITICAL
 

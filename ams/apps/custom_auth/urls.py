@@ -23,17 +23,17 @@ from .views import *
 urlpatterns = [
     path(
         'signup-user',
-        UserSignUpView.as_view(),
+        UserSignUpView_v1.as_view(),
         name="signup-user"
     ),
     path(
         'signin-user',
-        UserSigninView.as_view(),
+        UserSigninView_v1.as_view(),
         name="signin-user"
     ),
     path(
         'insert-employee',
-        InsertEmployeeView.as_view(),
+        InsertEmployeeView_v1.as_view(),
         name="insert-employee"
     ),
 

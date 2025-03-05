@@ -18,6 +18,7 @@ services:
       - "8000:8000"  # Exposing port 8000 for the web app
     volumes:
       - ./wait-for-it.sh:/wait-for-it.sh   # Mount the wait-for-it.sh script into the container
+      - ./logs:/var/log/django
     networks:
       - ams_network
 

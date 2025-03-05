@@ -12,6 +12,7 @@ services:
       sh -c "./wait-for-it.sh db:5432 -- python manage.py migrate && python manage.py runserver 0.0.0.0:8000"  # Migrate DB and start the server
     volumes:
       - .:/app  # Bind mount the current directory to /app inside the container
+      - ./logs:/var/log/django
     ports:
       - "8000:8000"  # Expose port 8000 for Django
     depends_on:

@@ -81,16 +81,16 @@ class City(models.Model):
         return f"{self.cityname}"
 
 
-class UserManager(models.Manager):
-
-    def get_by_usertypes(self, type):
-        return self.filter(isdeleted=False, usertype_id=type)
-
-    def get_by_email(self, email):
-        return self.get(isdeleted=False, email=email)
-
-    def get_queryset(self):
-        return super().get_queryset().filter(isdeleted=False)
+# class UserManager(models.Manager):
+#
+#     def get_by_usertypes(self, type):
+#         return self.filter(isdeleted=False, usertype_id=type)
+#
+#     def get_by_email(self, email):
+#         return self.get(isdeleted=False, email=email)
+#
+#     def get_queryset(self):
+#         return super().get_queryset().filter(isdeleted=False)
 
 
 class Users(AbstractUser):
@@ -174,7 +174,7 @@ class Users(AbstractUser):
     createddate = models.DateTimeField(default=utils.timezone.now, blank=True)
     updateddate = models.DateTimeField(blank=True, null=True)
 
-    objects = UserManager()
+    # objects = UserManager()
 
     class Meta:
         db_table = 'auth_user'

@@ -11,6 +11,7 @@ from pdb import set_trace
 
 class InsertEmployeeView(GenericAPIView):
 
+    serializer_class = ValidateEmployeeDetailsSerializers
     @classmethod
     def post(cls, request):
         response = {}

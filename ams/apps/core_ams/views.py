@@ -6,8 +6,7 @@ from ..custom_auth.http_status_code import *
 from rest_framework.response import Response
 
 class MarkAttendanceView(GenericAPIView):
-    response = {}
-
+    serializer_class = MarkAttendanceSerializer
     @classmethod
     def post(cls, request):
         response = {}
@@ -37,7 +36,8 @@ class MarkAttendanceView(GenericAPIView):
         return Response(response)
 
 class GetEmployeeView(GenericAPIView):
-    response = {}
+
+    serializer_class = GetEmployeeSerializer
 
     @classmethod
     def get(cls, request):
@@ -64,7 +64,7 @@ class GetEmployeeView(GenericAPIView):
 
 
 class GetSitesView(GenericAPIView):
-    response = {}
+    serializer_class = GetSitesSerializer
 
     @classmethod
     def get(cls, request):
@@ -94,6 +94,7 @@ class GetSitesView(GenericAPIView):
         return Response(response)
 
 class ApplyLeaveView(GenericAPIView):
+    serializer_class = ApplyLeaveSerializers
 
     @classmethod
     def post(cls, request):
@@ -125,6 +126,7 @@ class ApplyLeaveView(GenericAPIView):
         return Response(response)
 
 class InsertSiteView(GenericAPIView):
+    serializer_class = ValidateSiteDetailsSerializers
 
     @classmethod
     def post(cls, request):
@@ -158,6 +160,7 @@ class InsertSiteView(GenericAPIView):
         return Response(response)
 
 class MakeSuperviserView(GenericAPIView):
+    serializer_class = MakeSuperviserSerializer
 
     @classmethod
     def post(cls, request):
@@ -185,6 +188,7 @@ class MakeSuperviserView(GenericAPIView):
         return Response(response)
 
 class InsertUserTypeView(GenericAPIView):
+    serializer_class = InsertUserTypeSerializer
 
     @classmethod
     def post(cls, request):
@@ -464,6 +468,7 @@ class GetCountry(GenericAPIView):
 
 
 class GetUserTypes(GenericAPIView):
+    serializer_class = UserTypeSerializer
 
     @classmethod
     def get(self, request):

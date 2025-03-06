@@ -6,14 +6,21 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.conf import settings
 from rest_framework.authtoken.models import Token
+from django.utils import timezone
 
 
-class UserType(models.Model):
+class BaseModel(models.Model):
+    isdeleted = models.BooleanField(default=False)
+    createddate = models.DateTimeField(default=timezone.now, blank=True)
+    updateddate = models.DateTimeField(default=timezone.now, blank=True)
+
+    class Meta:
+        abstract = True
+
+
+class UserType(BaseModel):
     typename = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
-    isdeleted = models.BooleanField(default=False)
-    createddate = models.DateTimeField(default=utils.timezone.now, blank=True)
-    updateddate = models.DateTimeField(null=True)
 
     class Meta:
         db_table = 'usertype'
@@ -24,13 +31,10 @@ class UserType(models.Model):
         return f"{self.typename}"
 
 
-class Country(models.Model):
+class Country(BaseModel):
     countryname = models.CharField(max_length=200, default="")
     sortname = models.CharField(max_length=200, default="")
     countrycode = models.CharField(max_length=200, default="")
-    isdeleted = models.BooleanField(default=False)
-    createddate = models.DateTimeField(default=utils.timezone.now, blank=True)
-    updateddate = models.DateTimeField(null=True)
 
     class Meta:
         db_table = 'country'
@@ -41,16 +45,13 @@ class Country(models.Model):
         return f"{self.countryname}"
 
 
-class State(models.Model):
+class State(BaseModel):
     countryid = models.ForeignKey(
         Country,
         related_name="state",
         on_delete=models.CASCADE
     )
     statename = models.CharField(max_length=200)
-    isdeleted = models.BooleanField(default=False)
-    createddate = models.DateTimeField(default=utils.timezone.now, blank=True)
-    updateddate = models.DateTimeField(null=True)
 
     class Meta:
         db_table = 'state'
@@ -61,16 +62,13 @@ class State(models.Model):
         return f"{self.statename}"
 
 
-class City(models.Model):
+class City(BaseModel):
     stateid = models.ForeignKey(
         State,
         related_name="city",
         on_delete=models.CASCADE
     )
     cityname = models.CharField(max_length=200)
-    isdeleted = models.BooleanField(default=False)
-    createddate = models.DateTimeField(default=utils.timezone.now, blank=True)
-    updateddate = models.DateTimeField(null=True)
 
     class Meta:
         db_table = 'city'
@@ -93,7 +91,7 @@ class City(models.Model):
 #         return super().get_queryset().filter(isdeleted=False)
 
 
-class Users(AbstractUser):
+class Users(AbstractUser, BaseModel):
     company_name = models.CharField(default='', max_length=250)
     usertype = models.ForeignKey(
         UserType,
@@ -170,9 +168,6 @@ class Users(AbstractUser):
         blank=True,
         null=True
     )
-    isdeleted = models.BooleanField(default=False)
-    createddate = models.DateTimeField(default=utils.timezone.now, blank=True)
-    updateddate = models.DateTimeField(blank=True, null=True)
 
     # objects = UserManager()
 
@@ -201,7 +196,7 @@ class Users(AbstractUser):
         return f"{self.username}"
 
 
-class Site(models.Model):
+class Site(BaseModel):
     owner_user = models.ForeignKey(
         Users,
         related_name="siteowner",
@@ -243,9 +238,6 @@ class Site(models.Model):
         blank=True,
         null=True
     )
-    isdeleted = models.BooleanField(default=False)
-    createddate = models.DateTimeField(default=utils.timezone.now, blank=True)
-    updateddate = models.DateTimeField(null=True)
 
     class Meta:
         db_table = 'site'
@@ -256,7 +248,7 @@ class Site(models.Model):
         return f"{self.sitename}"
 
 
-class Employee(models.Model):
+class Employee(BaseModel):
     user = models.OneToOneField(
         Users,
         related_name="employeeinformation",
@@ -273,9 +265,6 @@ class Employee(models.Model):
     min_wages = models.FloatField(default=0.0)
     qualification = models.CharField(default='', max_length=250)
     is_on_leave = models.BooleanField(default=False)
-    isdeleted = models.BooleanField(default=False)
-    createddate = models.DateTimeField(default=utils.timezone.now, blank=True)
-    updateddate = models.DateTimeField(null=True)
 
     class Meta:
         db_table = 'employee'
@@ -286,7 +275,7 @@ class Employee(models.Model):
         return f"{self.user.username}"
 
 
-class Attendance(models.Model):
+class Attendance(BaseModel):
     employee = models.ForeignKey(
         Employee,
         related_name="employeeattendance",
@@ -312,9 +301,6 @@ class Attendance(models.Model):
         blank=True
     )
     date = models.DateField(null=True)
-    isdeleted = models.BooleanField(default=False)
-    createddate = models.DateTimeField(default=utils.timezone.now, blank=True)
-    updateddate = models.DateTimeField(null=True)
 
     class Meta:
         db_table = 'attendance'
@@ -325,7 +311,7 @@ class Attendance(models.Model):
         return f"{self.employee}"
 
 
-class Leave(models.Model):
+class Leave(BaseModel):
     employee = models.ForeignKey(
         Employee,
         related_name="employeealeave",
@@ -342,9 +328,6 @@ class Leave(models.Model):
     start_date = models.DateField(null=True)
     end_date = models.DateField(null=True)
     reason = models.TextField(blank=True, null=True)
-    isdeleted = models.BooleanField(default=False)
-    createddate = models.DateTimeField(default=utils.timezone.now, blank=True)
-    updateddate = models.DateTimeField(null=True)
 
     class Meta:
         db_table = 'leave'

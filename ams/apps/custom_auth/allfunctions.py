@@ -177,13 +177,13 @@ class TimeLimitedPaginator(Paginator):
 
 
 def PaginatedData(limit=None, page=None, data=None):
-    if limit is None or is_Empty(limit) or limit is 0:
+    if limit == None or is_Empty(limit) or limit == 0:
         limit = 10
 
-    if page is None or is_Empty(page) or page is 0:
+    if page == None or is_Empty(page) or page == 0:
         page = 1
 
-    if data is None or is_Empty(data) or data is 0:
+    if data == None or is_Empty(data) or data == 0:
         data = []
 
     record_size = int(limit)

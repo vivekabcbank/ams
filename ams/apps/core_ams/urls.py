@@ -39,35 +39,35 @@ urlpatterns = [
         name="mark-attendance"
     ),
 
-    path(
-        'insert-country',
-        InsertCountryView_v1.as_view(),
-        name="insert-country"
-    ),
-    path(
-        'insert-state',
-        InsertStateView_v1.as_view(),
-        name="insert-state"
-    ),
-    path(
-        'insert-city',
-        InsertCityView_v1.as_view(),
-        name="insert-city"
-    ),
-
-    path(
-        'get-state-by-country',
-        GetStateByCountry_v1.as_view(),
-        name="get-state-by-country"
-    ),
-    path(
-        'get-city-by-state',
-        GetCityByState_v1.as_view(),
-        name="get-city-by-state"
-    ),
-    path(
-        'get-country',
-        GetCountry_v1.as_view(),
-        name="get-country"
-    ),
+    # path(
+    #     'insert-country',
+    #     InsertCountryView_v1.as_view(),
+    #     name="insert-country"
+    # ),
+    # path(
+    #     'insert-state',
+    #     InsertStateView_v1.as_view(),
+    #     name="insert-state"
+    # ),
+    # path(
+    #     'insert-city',
+    #     InsertCityView_v1.as_view(),
+    #     name="insert-city"
+    # ),
+    #
+    # path(
+    #     'get-state-by-country',
+    #     GetStateByCountry_v1.as_view(),
+    #     name="get-state-by-country"
+    # ),
+    # path(
+    #     'get-city-by-state',
+    #     GetCityByState_v1.as_view(),
+    #     name="get-city-by-state"
+    # ),
+    # path(
+    #     'get-country',
+    #     GetCountry_v1.as_view(),
+    #     name="get-country"
+    # ),
 ]

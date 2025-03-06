@@ -4,9 +4,12 @@ from ..custom_auth.serializers import *
 from .serializers import *
 from ..custom_auth.http_status_code import *
 from rest_framework.response import Response
+from ..custom_auth.allfunctions import PaginatedData
+
 
 class MarkAttendanceView_v1(GenericAPIView):
     serializer_class = MarkAttendanceSerializer
+
     @classmethod
     def post(cls, request):
         response = {}
@@ -35,14 +38,16 @@ class MarkAttendanceView_v1(GenericAPIView):
 
         return Response(response)
 
-class GetEmployeeView_v1(GenericAPIView):
 
+class GetEmployeeView_v1(GenericAPIView):
     serializer_class = GetEmployeeSerializer
 
     @classmethod
-    def get(cls, request):
+    def get(cls, request, *args, **kwargs):
         response = {}
         request_data = {}
+        limit = int(request.GET.get('limit', 10))
+        page = int(request.GET.get('page', 1))
         request_data["site_info_id"] = request.GET.get("site_info_id")
         other_data = GetEmployeeSerializer(data=request_data)
         is_other_data_valid = other_data.is_valid()
@@ -52,7 +57,24 @@ class GetEmployeeView_v1(GenericAPIView):
             site_info_id = posted_data.get("site_info_id")
             result = Employee.objects.filter(site_info_id=site_info_id)
             employee_serializer = EmployeeDetailsSerializer(result, many=True)
-            response['result'] = employee_serializer.data
+            employees = employee_serializer.data
+
+            paginated_data = PaginatedData(limit=limit,
+                                           page=page,
+                                           data=employees)
+
+            total_data = paginated_data["total"]
+            filter_group = paginated_data["result"]
+
+            try:
+                page_exists = filter_group[page - 1]
+            except Exception as e:
+                page_exists = False
+
+            if page_exists:
+                employees = filter_group.object_list
+
+            response["result"] = employees
             response['status'] = HTTP_200_OK
         else:
             response['errors'] = get_json_errors(
@@ -82,7 +104,7 @@ class GetSitesView_v1(GenericAPIView):
             if admin_sites:
                 result_serializer = SiteDetailsSerializer(admin_sites, many=True)
             else:
-                result_serializer = SiteDetailsSerializer(employee_sites,)
+                result_serializer = SiteDetailsSerializer(employee_sites, )
             response['sites'] = result_serializer.data
             response['status'] = HTTP_200_OK
         else:
@@ -92,6 +114,7 @@ class GetSitesView_v1(GenericAPIView):
             response['status'] = HTTP_204_NO_CONTENT
 
         return Response(response)
+
 
 class ApplyLeaveView_v1(GenericAPIView):
     serializer_class = ApplyLeaveSerializers
@@ -124,6 +147,7 @@ class ApplyLeaveView_v1(GenericAPIView):
             response['status'] = HTTP_204_NO_CONTENT
 
         return Response(response)
+
 
 class InsertSiteView_v1(GenericAPIView):
     serializer_class = ValidateSiteDetailsSerializers
@@ -159,6 +183,7 @@ class InsertSiteView_v1(GenericAPIView):
 
         return Response(response)
 
+
 class MakeSuperviserView_v1(GenericAPIView):
     serializer_class = MakeSuperviserSerializer
 
@@ -186,6 +211,7 @@ class MakeSuperviserView_v1(GenericAPIView):
             response['status'] = HTTP_204_NO_CONTENT
 
         return Response(response)
+
 
 class InsertUserTypeView_v1(GenericAPIView):
     serializer_class = InsertUserTypeSerializer

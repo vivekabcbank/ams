@@ -7,6 +7,7 @@ import hashlib
 from .models import Users
 from rest_framework.authtoken.models import Token
 import datetime
+from django.core.paginator import *
 
 
 def decode_str(encrypt_text):
@@ -166,3 +167,41 @@ def decode_multi_value(value):
     else:
         value = []
     return value
+
+
+class TimeLimitedPaginator(Paginator):
+
+    @cached_property
+    def count(self):
+        return 9999999999
+
+
+def PaginatedData(limit=None, page=None, data=None):
+    if limit is None or is_Empty(limit) or limit is 0:
+        limit = 10
+
+    if page is None or is_Empty(page) or page is 0:
+        page = 1
+
+    if data is None or is_Empty(data) or data is 0:
+        data = []
+
+    record_size = int(limit)
+
+    total_objects = len(data)
+    Paginator = TimeLimitedPaginator
+    paginator = Paginator(data, int(record_size))
+    paginated_data = paginator.get_page(page)
+
+    try:
+        pageExists = paginator.page(page)
+    except InvalidPage as e:
+        pageExists = False
+
+    result = paginated_data if pageExists else data
+
+    response = {
+        "result": result,
+        "total": total_objects
+    }
+    return response

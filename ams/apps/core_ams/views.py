@@ -5,6 +5,7 @@ from .serializers import *
 from ..custom_auth.http_status_code import *
 from rest_framework.response import Response
 from ..custom_auth.allfunctions import PaginatedData
+from django.db import transaction
 
 
 class MarkAttendanceView_v1(GenericAPIView):
@@ -194,16 +195,25 @@ class MakeSuperviserView_v1(GenericAPIView):
         is_other_data_valid = other_data.is_valid()
 
         if is_other_data_valid:
-            posted_data = other_data.validated_data
-            user = posted_data.get("user")
-            password = posted_data.get("password")
+            try:
+                with transaction.atomic():
+                    posted_data = other_data.validated_data
+                    user = posted_data.get("user")
 
-            user.password = hash_md5(password)
-            user.usertype_id = User_Type_id.SUPERVISER.value
-            user.save()
+                    # Lock the user record to prevent race conditions
+                    user = Users.objects.select_for_update().get(id=user.id)
+                    password = posted_data.get("password")
 
-            response['status'] = HTTP_200_OK
-            response["message"] = "User changed to superuser"
+                    user.password = hash_md5(password)
+                    user.usertype_id = User_Type_id.SUPERVISER.value
+                    user.save()
+
+                    response['status'] = HTTP_200_OK
+                    response["message"] = "User changed to superuser"
+            except Exception as e:
+                response['errors'] = f"{e}"
+                response['status'] = HTTP_204_NO_CONTENT
+                response["message"] = "something went wrong"
         else:
             response['errors'] = get_json_errors(
                 other_data.errors

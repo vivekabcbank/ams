@@ -1,0 +1,219 @@
+# 1. PostgreSQL Persistent Volume (PV)
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: postgres-pv
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:  # Use hostPath for local storage (for development purposes).
+    path: /mnt/data/postgres  # You can change this path based on your environment.
+
+---
+# 2. Persistent Volume Claim (PVC)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+# 3. PostgreSQL Database - StatefulSet (Uses PVC)
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+spec:
+  serviceName: postgres
+  replicas: 1  # Only one instance for now (you can scale later).
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:17.3
+          env:
+            - name: POSTGRES_DB
+              value: postgres  # Database name
+            - name: POSTGRES_USER
+              value: postgres  # Database user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: root  # Reference the secret for password
+                  key: POSTGRES_PASSWORD
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data  # Mount the PVC to this directory
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 5Gi  # The same size as the PVC
+
+---
+# 4. PostgreSQL Service - Expose the database
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  clusterIP: None  # This is required for StatefulSet to work with stable network identities
+
+---
+# 5. AMS Web Application (ams-web) - Deployment with environment variables to connect to the database
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ams-web
+spec:
+  replicas: 1  # Set the number of replicas to 2 for horizontal scaling
+  selector:
+    matchLabels:
+      app: ams-web
+  template:
+    metadata:
+      labels:
+        app: ams-web
+    spec:
+      containers:
+        - name: ams-web
+          image: vivekath1/ams-web:v.1.3
+          env:
+            - name: DB_HOST
+              value: postgres  # Database host is the service name 'postgres'
+            - name: DB_PORT
+              value: "5432"  # Default PostgreSQL port
+            - name: DB_NAME
+              value: postgres  # The database name
+            - name: DB_USER
+              value: postgres  # The database user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: root
+                  key: POSTGRES_PASSWORD
+          ports:
+            - containerPort: 8000
+
+---
+# 6. AMS Web Service - Expose the web application
+apiVersion: v1
+kind: Service
+metadata:
+  name: ams-web
+spec:
+  selector:
+    app: ams-web
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+
+---
+# 7. Nginx Reverse Proxy (nginx) - Deployment and Service for external access
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  replicas: 1  # Set the number of replicas to 2 for horizontal scaling
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:alpine
+          volumeMounts:
+            - name: nginx-config  # Mounting the nginx-config volume to nginx.conf path
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf  # Use this to mount only the nginx.conf file from the ConfigMap
+          ports:
+            - containerPort: 80
+      volumes:
+        - name: nginx-config  # Define the volume here
+          configMap:
+            name: nginx-config  # Reference to the nginx-config ConfigMap
+
+
+---
+# 8. Nginx Service - Expose the Nginx reverse proxy externally
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+spec:
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer  # Use LoadBalancer for external access
+
+---
+# 9. ConfigMap for Nginx Config
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+data:
+  nginx.conf: |
+    events {
+        worker_connections 1024;
+    }
+
+    http {
+        log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                          '$status $body_bytes_sent "$http_referer" '
+                          '"$http_user_agent" "$http_x_forwarded_for"';
+
+        access_log  /var/log/nginx/access.log  main;
+        error_log   /var/log/nginx/error.log warn;
+
+        upstream app_server {
+            server ams-web:8000;  # This matches the name of your 'ams-web' container
+        }
+
+        server {
+            listen 80;
+
+            location / {
+                proxy_pass http://app_server;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+        }
+    }
+
+

@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-nodedb-app
+spec:
+  replicas: 2  # Number of replicas (pods) to run
+  selector:
+    matchLabels:
+      app: nodedb-app
+  template:
+    metadata:
+      labels:
+        app: nodedb-app
+    spec:
+      containers:
+      - name: nodedb-app
+        image: philippaul/node-demo-app:01  # Image to use for the container
+      - name: mongodb
+        image: mongo:latest
+        ports:
+        - containerPort: 80
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-my-nodedb-app
+spec:
+  selector:
+    app: nodedb-app  # Select pods with the label 'app: nginx'
+  ports:
+    - protocol: TCP
+      port: 8080  # Port that the service will expose
+      targetPort: 3000  # Port on the container that the service will forward traffic to
+  type: LoadBalancer  # Default type, makes the service accessible only inside the cluster

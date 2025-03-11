@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-ams-web
+spec:
+  replicas: 3  # Number of replicas (pods) to run
+  selector:
+    matchLabels:
+      app: ams-web
+  template:
+    metadata:
+      labels:
+        app: ams-web
+    spec:
+      containers:
+      - name: ams-web
+        image: vivekath1/ams-web:v.1.3  # Image to use for the container
+        ports:
+        - containerPort: 80

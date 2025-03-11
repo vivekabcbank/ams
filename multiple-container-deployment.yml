@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-nodedb-app
+spec:
+  replicas: 2  # Number of replicas (pods) to run
+  selector:
+    matchLabels:
+      app: nodedb-app
+  template:
+    metadata:
+      labels:
+        app: nodedb-app
+    spec:
+      containers:
+      - name: nodedb-app
+        image: philippaul/node-demo-app:01  # Image to use for the container
+      - name: mongodb
+        image: mongo:latest
+        ports:
+        - containerPort: 80

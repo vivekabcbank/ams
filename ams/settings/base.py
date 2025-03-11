@@ -93,12 +93,12 @@ WSGI_APPLICATION = 'ams.wsgi.application'
 
 # HOST = config('HOST', default='', cast=str)
 # if HOST == "test":
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 # elif HOST == "development":
 #     DATABASES = {
 #         'default': {
@@ -132,6 +132,18 @@ DATABASES = {
 #         'PORT': '5432',  # Default PostgreSQL port
 #     }
 # }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',  # Correct backend for PostgreSQL
+        'NAME': "postgres",  # Database name (must match POSTGRES_DB in StatefulSet)
+        'USER': "postgres",  # Database user (must match POSTGRES_USER in StatefulSet)
+        'PASSWORD': "root",  # Database password (change this to securely fetch from Kubernetes secrets)
+        'HOST': 'postgres',  # The name of the PostgreSQL service in Kubernetes
+        'PORT': '5432',  # Default PostgreSQL port
+    }
+}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

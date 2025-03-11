@@ -20,6 +20,8 @@ from django.urls import path, include
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from .views import *
+from django.conf.urls import handler404
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -35,11 +37,14 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    path('',Index,name="index"),
     path('api/v1/admin/', admin.site.urls),
     path('api/v1/auth/',include('ams.apps.custom_auth.urls')),
     path('api/v1/core/',include('ams.apps.core_ams.urls')),
     path('api/v1/swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='swagger-schema'),
 ]
+
+handler404 = custom_404
 
 # Writing test cases in all apps Django, flask, fast-api, also do any one implementations like payment getways
 # Optimize all apps Django, flask, fast-api with needed requirements
